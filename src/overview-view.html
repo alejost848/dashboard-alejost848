@@ -1,0 +1,122 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+
+<link rel="import" href="../bower_components/paper-spinner/paper-spinner-lite.html">
+
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="overview-view">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+      }
+      #cards_container{
+        @apply --layout-horizontal;
+        @apply --layout-justified;
+      }
+      .card_group{
+        width: calc(50% - 8px);
+      }
+      .card{
+        border-radius: 4px;
+        padding: 30px;
+        box-sizing: border-box;
+        background-color: var(--card-bg-color);
+        overflow: hidden;
+        @apply --shadow-elevation-4dp;
+
+        width: 100%;
+        min-height: 200px;
+      }
+      .big_number{
+        font-size: 90px;
+        font-weight: 300;
+        color: white;
+      }
+      @media (max-width: 1400px) {
+        #cards_container{
+          @apply --layout-vertical;
+        }
+        .card_group{
+          width: 100%;
+        }
+      }
+    </style>
+
+    <firebase-document
+      app-name="alejost848"
+      path="/dashboard/overview"
+      data="{{data}}"
+      on-data-changed="_dataChanged">
+    </firebase-document>
+
+    <h1>Overview</h1>
+
+    <div id="cards_container">
+      <div class="card_group layout vertical">
+        <h2>Last 30 days</h2>
+        <div class="card layout vertical center-center flex">
+          <iron-icon icon="my-icons:insert-chart"></iron-icon>
+        </div>
+      </div>
+      <div class="card_group layout horizontal wrap justified">
+        <div class="card_group">
+          <h2>Users right now</h2>
+          <div class="card layout vertical center-center">
+            <iron-icon icon="my-icons:insert-chart"></iron-icon>
+          </div>
+        </div>
+        <div class="card_group">
+          <h2>Subscribed devices</h2>
+          <div class="card layout vertical center-center">
+            <div class="big_number" hidden="[[loadingData]]">[[data.subscriptions]]</div>
+            <paper-spinner-lite active hidden="[[!loadingData]]"></paper-spinner-lite>
+          </div>
+        </div>
+        <div class="card_group">
+          <h2>Works posted</h2>
+          <div class="card layout vertical center-center">
+            <div class="big_number" hidden="[[loadingData]]">[[data.workCount]]</div>
+            <paper-spinner-lite active hidden="[[!loadingData]]"></paper-spinner-lite>
+          </div>
+        </div>
+        <div class="card_group">
+          <h2>Tutorials uploaded</h2>
+          <div class="card layout vertical center-center">
+            <div class="big_number" hidden="[[loadingData]]">[[data.tutorialCount]]</div>
+            <paper-spinner-lite active hidden="[[!loadingData]]"></paper-spinner-lite>
+          </div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    class OverviewView extends Polymer.Element {
+      static get is() { return 'overview-view'; }
+
+      _dataChanged(e){
+        let value = e.detail.value;
+        if (Object.keys(value).length === 0 && value.constructor === Object) {
+          this.loadingData = true;
+        } else {
+          this.loadingData = false;
+        }
+      }
+    }
+
+    window.customElements.define(OverviewView.is, OverviewView);
+  </script>
+</dom-module>

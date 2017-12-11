@@ -9,30 +9,59 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
+
 <link rel="import" href="../bower_components/app-layout/app-drawer/app-drawer.html">
 <link rel="import" href="../bower_components/app-layout/app-drawer-layout/app-drawer-layout.html">
 <link rel="import" href="../bower_components/app-layout/app-header/app-header.html">
 <link rel="import" href="../bower_components/app-layout/app-header-layout/app-header-layout.html">
-<link rel="import" href="../bower_components/app-layout/app-scroll-effects/app-scroll-effects.html">
 <link rel="import" href="../bower_components/app-layout/app-toolbar/app-toolbar.html">
 <link rel="import" href="../bower_components/app-route/app-location.html">
 <link rel="import" href="../bower_components/app-route/app-route.html">
-<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
-<link rel="import" href="../bower_components/iron-selector/iron-selector.html">
-<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="my-icons.html">
 
-<link rel="lazy-import" href="my-view1.html">
-<link rel="lazy-import" href="my-view2.html">
+<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../bower_components/paper-item/paper-icon-item.html">
+
+<link rel="import" href="../bower_components/polymerfire/firebase-app.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+
+<link rel="import" href="my-icons.html">
+<link rel="import" href="shared-styles.html">
+
+<link rel="lazy-import" href="login-view.html">
+<link rel="lazy-import" href="overview-view.html">
 <link rel="lazy-import" href="my-view3.html">
 <link rel="lazy-import" href="my-view404.html">
 
 <dom-module id="dashboard-app">
   <template>
-    <style>
+    <style include="shared-styles">
       :host {
         --app-primary-color: #4285f4;
         --app-secondary-color: black;
+
+        --app-background-color: #191919;
+        --app-accent-color: #2196f3;
+        --app-linear-gradient: linear-gradient(to right, var(--app-accent-color), #00e5ff);
+
+        /*Cards dark theme*/
+        --card-bg-color: #212121;
+        --card-image-bg-color: #1e1e1e;
+        --card-title-color: #f4f4f4;
+        --card-description-color: #aaaaaa;
+        --card-date-color: #606060;
+
+        --header-color: white;
+        --page-title-color: white;
+        --module-title-color: #eeeeee;
+        --bottom-nav-bg-color: white;
+        --bottom-nav-item-color: #777777;
+
+        --app-drawer-width: 232px;
 
         display: block;
       }
@@ -50,21 +79,65 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         --paper-icon-button-ink-color: white;
       }
 
-      .drawer-list {
-        margin: 0 20px;
+      app-drawer{
+        --app-drawer-content-container:{
+          background-color: var(--card-bg-color);
+        }
+      }
+      #drawer_wrapper{
+        height: 100%;
+        overflow-y: auto;
+      }
+      #drawer_header{
+        background-color: var(--card-image-bg-color);
+        min-height: 144px;
+        padding: 20px;
+        box-sizing: border-box;
+      }
+      #drawer_icon{
+        width: 36px;
+        height: 36px;
+        color: white;
+      }
+      #user_name{
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 14px;
+      }
+      #user_email{
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 13px;
+        font-weight: 300;
       }
 
-      .drawer-list a {
-        display: block;
-        padding: 0 16px;
-        text-decoration: none;
-        color: var(--app-secondary-color);
-        line-height: 40px;
+      paper-listbox{
+        --paper-listbox-background-color: var(--card-bg-color);
+      }
+      .drawer_item{
+        color: #aaa;
+      }
+      .drawer_item.iron-selected{
+        color: var(--app-primary-color);
+      }
+      .drawer_item.iron-selected paper-icon-item{
+        font-weight: 500;
+      }
+      paper-icon-item{
+        font-size: 14px;
+      }
+      #logout_button{
+        margin-bottom: 12px;
+        cursor: pointer;
+        color: #aaa;
+      }
+      #logout_button iron-icon{
+        color: var(--paper-red-700);
       }
 
-      .drawer-list a.iron-selected {
-        color: black;
-        font-weight: bold;
+      iron-pages > * {
+        width: 100%;
+        max-width: 1400px;
+        padding: 100px;
+        box-sizing: border-box;
       }
     </style>
 
@@ -80,39 +153,125 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         tail="{{subroute}}">
     </app-route>
 
-    <app-drawer-layout fullbleed narrow="{{narrow}}">
+    <firebase-app
+      name="alejost848"
+      auth-domain="alejost848-afea9.firebaseapp.com"
+      database-url="https://alejost848-afea9.firebaseio.com"
+      api-key="AIzaSyClG-y7seb17rhGIa3hN4QCLn_8Ren4SRw"
+      storage-bucket="alejost848-afea9.appspot.com"
+      messaging-sender-id="776617594441">
+    </firebase-app>
+
+    <firebase-auth
+      id="auth"
+      app-name="alejost848"
+      user="{{user}}"
+      signed-in="{{signedIn}}"
+      status-known="{{statusKnown}}">
+    </firebase-auth>
+
+    <app-drawer-layout fullbleed responsive-width="960px" narrow="{{narrow}}" force-narrow="[[!signedIn]]" on-narrow-changed="_narrowChanged">
       <!-- Drawer content -->
-      <app-drawer id="drawer" slot="drawer" swipe-open="[[narrow]]">
-        <app-toolbar>Menu</app-toolbar>
-        <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
-          <a name="view1" href="[[rootPath]]view1">View One</a>
-          <a name="view2" href="[[rootPath]]view2">View Two</a>
-          <a name="view3" href="[[rootPath]]view3">View Three</a>
-        </iron-selector>
+      <app-drawer id="drawer" slot="drawer" swipe-open="[[narrow]]" disable-swipe="[[!signedIn]]" transition-duration="[[_drawerTransitionDuration]]">
+        <div id="drawer_wrapper" class="layout vertical">
+          <div id="drawer_header" class="layout vertical">
+            <iron-icon id="drawer_icon" icon="my-icons:logo"></iron-icon>
+            <span class="flex"></span>
+            <div id="user_name">Alejandro Sanclemente</div>
+            <div id="user_email">alejost848@gmail.com</div>
+          </div>
+          <paper-listbox selected="[[page]]" attr-for-selected="name" role="navigation">
+            <a name="overview" href="[[rootPath]]" class="link drawer_item" tabindex="-1">
+              <paper-icon-item>
+                <iron-icon icon="my-icons:dashboard" slot="item-icon"></iron-icon>
+                Overview
+              </paper-icon-item>
+            </a>
+            <a name="home" href="[[rootPath]]home" class="link drawer_item" tabindex="-1">
+              <paper-icon-item>
+                <iron-icon icon="my-icons:home" slot="item-icon"></iron-icon>
+                Home
+              </paper-icon-item>
+            </a>
+            <a name="works" href="[[rootPath]]works" class="link drawer_item" tabindex="-1">
+              <paper-icon-item>
+                <iron-icon icon="my-icons:view-carousel" slot="item-icon"></iron-icon>
+                Works
+              </paper-icon-item>
+            </a>
+            <a name="tutorials" href="[[rootPath]]tutorials" class="link drawer_item" tabindex="-1">
+              <paper-icon-item>
+                <iron-icon icon="my-icons:subscriptions" slot="item-icon"></iron-icon>
+                Tutorials
+              </paper-icon-item>
+            </a>
+            <a name="notifications" href="[[rootPath]]notifications" class="link drawer_item" tabindex="-1">
+              <paper-icon-item>
+                <iron-icon icon="my-icons:chat" slot="item-icon"></iron-icon>
+                Notifications
+              </paper-icon-item>
+            </a>
+            <a name="analytics" href="[[rootPath]]analytics" class="link drawer_item" tabindex="-1">
+              <paper-icon-item>
+                <iron-icon icon="my-icons:insert-chart" slot="item-icon"></iron-icon>
+                Analytics
+              </paper-icon-item>
+            </a>
+            <a name="youtube-analytics" href="[[rootPath]]youtube-analytics" class="link drawer_item" tabindex="-1">
+              <paper-icon-item>
+                <iron-icon icon="my-icons:youtube" slot="item-icon"></iron-icon>
+                YouTube Analytics
+              </paper-icon-item>
+            </a>
+            <a name="releases" href="[[rootPath]]releases" class="link drawer_item" tabindex="-1">
+              <paper-icon-item>
+                <iron-icon icon="my-icons:new-releases" slot="item-icon"></iron-icon>
+                Releases
+              </paper-icon-item>
+            </a>
+            <a href="https://alejo.st" class="link drawer_item" tabindex="-1">
+              <paper-icon-item>
+                <iron-icon icon="my-icons:logo" slot="item-icon"></iron-icon>
+                Go to alejo.st
+              </paper-icon-item>
+            </a>
+          </paper-listbox>
+          <span class="flex"></span>
+          <paper-icon-item id="logout_button" on-tap="logout">
+            <iron-icon icon="my-icons:exit-to-app" slot="item-icon"></iron-icon>
+            Logout
+          </paper-icon-item>
+        </div>
       </app-drawer>
 
       <!-- Main content -->
-      <app-header-layout has-scrolling-region>
-
-        <app-header slot="header" condenses reveals effects="waterfall">
-          <app-toolbar>
-            <paper-icon-button icon="my-icons:menu" drawer-toggle></paper-icon-button>
-            <div main-title>My App</div>
-          </app-toolbar>
-        </app-header>
-
-        <iron-pages
+      <app-header-layout fullbleed>
+        <template is="dom-if" if="[[signedIn]]">
+          <app-header slot="header" hidden="[[!narrow]]">
+            <app-toolbar>
+              <paper-icon-button icon="my-icons:menu" drawer-toggle></paper-icon-button>
+              <div main-title>Dashboard</div>
+            </app-toolbar>
+          </app-header>
+        </template>
+        <template is="dom-if" if="[[statusKnown]]">
+          <iron-pages
             selected="[[page]]"
             attr-for-selected="name"
             fallback-selection="view404"
             role="main">
-          <my-view1 name="view1"></my-view1>
-          <my-view2 name="view2"></my-view2>
-          <my-view3 name="view3"></my-view3>
-          <my-view404 name="view404"></my-view404>
-        </iron-pages>
+            <login-view id="login_view" name="login" on-login-submit="login" on-reset-submit="reset"></login-view>
+            <overview-view name="overview"></overview-view>
+            <home-view name="home"></home-view>
+            <my-view3 name="view3"></my-view3>
+            <my-view404 name="view404"></my-view404>
+          </iron-pages>
+        </template>
       </app-header-layout>
     </app-drawer-layout>
+
+    <paper-toast id="toast" text="[[toastText]]" duration="[[toastDuration]]" on-opened-changed="_toastOpened"></paper-toast>
+
   </template>
 
   <script>
@@ -137,13 +296,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       static get observers() {
         return [
           '_routePageChanged(routeData.page)',
+          '_userStatusChanged(statusKnown, signedIn)'
         ];
       }
 
       _routePageChanged(page) {
         // If no page was found in the route data, page will be an empty string.
-        // Default to 'view1' in that case.
-        this.page = page || 'view1';
+        // Default to 'overview' in that case.
+        this.page = page || 'overview';
 
         // Close a non-persistent drawer when the page & route are changed.
         if (!this.$.drawer.persistent) {
@@ -153,7 +313,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _pageChanged(page) {
         // Load page import on demand. Show 404 page if fails
-        var resolvedPageUrl = this.resolveUrl('my-' + page + '.html');
+        var resolvedPageUrl = this.resolveUrl(page + '-view' + '.html');
         Polymer.importHref(
             resolvedPageUrl,
             null,
@@ -163,6 +323,71 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _showPage404() {
         this.page = 'view404';
+      }
+
+      _userStatusChanged(statusKnown, signedIn){
+        // HACK: Wait until the status of the user is known
+        // If the user isn't logged in redirect it to login page
+        if (statusKnown && !signedIn) {
+          this.set('route.path', '/');
+          this.page = 'login';
+        }
+      }
+
+      login(e){
+        this.$.auth.signInWithEmailAndPassword(e.detail.email, e.detail.password).then(() => {
+          this.page = 'overview';
+          this.$.login_view.resetInputs();
+        }).catch(error => {
+          if (error.code == "auth/user-not-found") {
+            this._openToast({detail: {text: "The user doesn't exist", duration: 3000}});
+          } else if (error.code == "auth/wrong-password") {
+            this._openToast({detail: {text: "Wrong password. Try again or click Forgot password to reset it.", duration: 5000}});
+          }
+        });
+      }
+
+      logout(){
+        this.$.auth.signOut();
+      }
+
+      reset(e){
+        this.$.auth.sendPasswordResetEmail(e.detail.email).then(() => {
+          console.log("Reset email sent");
+        }).catch(error => {
+          if (error.code == "auth/user-not-found") {
+            this._openToast({detail: {text: "The user doesn't exist", duration: 3000}});
+          }
+        });
+      }
+
+      _openToast(e){
+        //Hide previous toast if opened and show the new toast after waiting for the other to close
+        let waitTime = 0;
+        if (this.$.toast.opened) {
+          this.$.toast.hide();
+          waitTime = 300;
+        }
+        setTimeout(() => {
+          this.toastText = e.detail.text;
+          this.toastDuration = e.detail.duration;
+          this.$.toast.show();
+        }, waitTime);
+      }
+
+      _toastOpened(e){
+        let isOpen = e.detail.value;
+        this.toastOpen = isOpen;
+      }
+
+      // HACK: Prevent drawer from animating open on desktop
+      _narrowChanged(e){
+        let narrow = e.detail.value;
+        if (narrow) {
+          this._drawerTransitionDuration = 200;
+        } else {
+          this._drawerTransitionDuration = 0;
+        }
       }
     }
 
