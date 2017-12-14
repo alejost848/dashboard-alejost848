@@ -183,8 +183,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <div id="drawer_header" class="layout vertical">
             <iron-icon id="drawer_icon" icon="alejost-icons:logo"></iron-icon>
             <span class="flex"></span>
-            <div id="user_name">Alejandro Sanclemente</div>
-            <div id="user_email">alejost848@gmail.com</div>
+            <div id="user_name">[[user.displayName]]</div>
+            <div id="user_email">[[user.email]]</div>
           </div>
           <paper-listbox selected="[[page]]" attr-for-selected="name" role="navigation">
             <a name="overview" href="[[rootPath]]" class="link drawer_item" tabindex="-1">
