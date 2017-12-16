@@ -57,12 +57,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       }
       #login_button{
-        background-color: var(--app-accent-color);
-        color: white;
         width: 80px;
-        padding: 6px 12px;
         height: 36px;
-        @apply --paper-font-button;
       }
       #forgot_password_button{
         text-transform: none;
@@ -91,7 +87,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <div class="layout horizontal center">
               <paper-button id="forgot_password_button" noink on-tap="_showResetPage">Forgot password?</paper-button>
               <span class="flex"></span>
-              <paper-button id="login_button" raised on-tap="login">Login</paper-button>
+              <paper-button id="login_button" class="raised_button" raised on-tap="login">Login</paper-button>
             </div>
           </section>
           <section name="reset" class="layout vertical">
