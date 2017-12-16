@@ -1,0 +1,125 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+
+<link rel="import" href="../../bower_components/iron-image/iron-image.html">
+
+<link rel="import" href="../../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+
+<link rel="import" href="../../bower_components/neon-animation/web-animations.html">
+
+<link rel="import" href="../shared-styles.html">
+
+<dom-module id="slider-card">
+  <template>
+    <style include="shared-styles">
+      :host {
+        @apply --layout-vertical;
+        @apply --layout-start;
+
+        position: relative;
+        border-radius: 4px;
+        padding: 15px;
+        padding-bottom: 10px;
+        box-sizing: border-box;
+        background-color: var(--card-bg-color);
+        color: white;
+        overflow: hidden;
+        @apply --shadow-elevation-4dp;
+
+        width: calc(25% - 8px);
+        min-height: 200px;
+
+      	cursor: move;
+      	cursor: -webkit-grabbing;
+      }
+      :host:focus{
+        @apply --shadow-elevation-12dp;
+      }
+      iron-image{
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0.4;
+        background-color: var(--card-image-bg-color);
+      }
+      paper-dropdown-menu{
+        width: 100%;
+        --paper-input-container-focus-color: var(--app-accent-color);
+        --paper-input-container-input-color: var(--page-title-color);
+        --paper-input-container-underline:{
+          border: 1px white solid;
+          opacity: 0.1;
+        }
+      }
+      paper-listbox{
+        width: 250px;
+      }
+      paper-item{
+        font-size: 14px;
+        line-height: 16px;
+      }
+    </style>
+
+    <firebase-document
+      app-name="alejost848"
+      path="/home/slider/[[index]]"
+      data="{{data}}">
+    </firebase-document>
+
+    <firebase-query
+      app-name="alejost848"
+      path="/works"
+      order-by-child="title"
+      equal-to="{{itemTitle}}"
+      on-data-changed="getWorkInfo">
+    </firebase-query>
+
+    <iron-image src="[[data.image]]" preload fade sizing="cover"></iron-image>
+    <span class="flex"></span>
+    <paper-dropdown-menu no-label-float horizontal-align="left">
+      <paper-listbox selected="{{itemTitle}}" attr-for-selected="name" slot="dropdown-content">
+        <template is="dom-repeat" items="[[dropdownList]]">
+          <paper-item name="[[item.title]]">[[item.title]]</paper-item>
+        </template>
+      </paper-listbox>
+    </paper-dropdown-menu>
+  </template>
+
+  <script>
+    class SliderCard extends Polymer.Element {
+      static get is() { return 'slider-card'; }
+
+      static get properties() {
+        return {
+          data: Object
+        };
+      }
+
+      getWorkInfo(e){
+        let data = e.detail.value;
+        if (data.length > 0) {
+          this.data = {
+            image: data[0].thumbnail,
+            title: data[0].title,
+            slug: data[0].slug
+          };
+        }
+      }
+    }
+
+    window.customElements.define(SliderCard.is, SliderCard);
+  </script>
+</dom-module>

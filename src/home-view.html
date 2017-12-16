@@ -9,6 +9,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
+
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+
+<link rel="import" href="../bower_components/polymer-sortablejs/polymer-sortablejs.html">
+
+<link rel="import" href="elements/slider-card.html">
 <link rel="import" href="shared-styles.html">
 
 <dom-module id="home-view">
@@ -17,14 +26,82 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       :host {
         display: block;
       }
+
+      .raised_button{
+        height: 36px;
+        @apply --paper-font-button;
+      }
+
+      sortable-js{
+        margin-bottom: 40px;
+      }
+      sortable-js .sortable-chosen{
+        background-color: var(--card-image-bg-color);
+        @apply --shadow-elevation-12dp;
+      }
+      sortable-js .sortable-ghost{
+        background-color: var(--app-accent-color);
+        @apply --shadow-elevation-12dp;
+      }
     </style>
 
+    <firebase-query
+      id="slider_query"
+      app-name="alejost848"
+      path="/home/slider"
+      data="{{sliderData}}">
+    </firebase-query>
+
+    <firebase-query
+      app-name="alejost848"
+      path="/works"
+      data="{{works}}">
+    </firebase-query>
+
     <h1>Home</h1>
+
+    <h2>Slider</h2>
+
+    <sortable-js class="layout horizontal wrap justified" on-sortable-sort="sortSlider">
+      <template is="dom-if" if="[[dataReady]]" restamp="true">
+        <template is="dom-repeat" items="[[sliderData]]" as="slide">
+          <slider-card item-title="[[slide.title]]" dropdown-list="[[works]]" index="[[index]]"></slider-card>
+        </template>
+      </template>
+    </sortable-js>
+
   </template>
 
   <script>
     class HomeView extends Polymer.Element {
       static get is() { return 'home-view'; }
+
+      static get properties() {
+        return {
+          dataReady: {
+            type: Boolean,
+            value: true
+          }
+        };
+      }
+
+      ready(){
+        super.ready();
+      }
+
+      sortSlider(e){
+        this.dataReady = false;
+        let sliderArray = [];
+        let slides = this.shadowRoot.querySelectorAll("slider-card");
+        for (var i = 0; i < slides.length; i++) {
+          sliderArray.push(slides[i].data);
+        }
+        this.$.slider_query.ref.set(sliderArray);
+        //HACK: Force sliderData's dom-repeat to re-render after data is updated in Firebase
+        setTimeout(() => {
+          this.dataReady = true;
+        },100);
+      }
     }
 
     window.customElements.define(HomeView.is, HomeView);
