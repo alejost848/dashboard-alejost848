@@ -26,7 +26,10 @@
     "paper-dropdown-menu": "PolymerElements/paper-dropdown-menu#^2.0.1",
     "iron-image": "PolymerElements/iron-image#^2.1.2",
     "Sortable": "RubaXa/Sortable#master",
-    "polymer-sortablejs": "bmwalters/polymer-sortablejs#2.0-preview"
+    "polymer-sortablejs": "bmwalters/polymer-sortablejs#2.0-preview",
+    "paper-progress": "PolymerElements/paper-progress#^2.0.1",
+    "moment": "^2.19.1",
+    "paper-fab": "PolymerElements/paper-fab#^2.0.0"
   },
   "resolutions": {
     "polymer": "^2.0.0"
