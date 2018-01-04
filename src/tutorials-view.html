@@ -9,6 +9,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
+
+<link rel="import" href="../bower_components/paper-fab/paper-fab.html">
+
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+
+<link rel="import" href="elements/alejost-card.html">
+<link rel="import" href="elements/alejost-module.html">
 <link rel="import" href="shared-styles.html">
 
 <dom-module id="tutorials-view">
@@ -17,14 +24,45 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       :host {
         display: block;
       }
+      paper-fab{
+        position: fixed;
+        bottom: 36px;
+        right: 36px;
+        color: white;
+        background-color: var(--app-accent-color);
+      }
     </style>
 
     <h1>Tutorials</h1>
+
+    <firebase-query
+      app-name="alejost848"
+      path="/tutorials"
+      order-by-child="publishedDate"
+      data="{{series}}">
+    </firebase-query>
+
+    <template is="dom-repeat" items="[[series]]" as="serie">
+      <alejost-module module-title="[[serie.name]]">
+        <template is="dom-repeat" items="[[_toArray(serie.videos)]]" as="tutorial">
+          <alejost-card href="[[rootPath]]tutorial/[[serie.$key]]/[[tutorial.slug]]" data="[[tutorial]]"></alejost-card>
+        </template>
+      </alejost-module>
+    </template>
+
+    <paper-fab icon="alejost-icons:add"></paper-fab>
   </template>
 
   <script>
     class TutorialsView extends Polymer.Element {
       static get is() { return 'tutorials-view'; }
+
+      _toArray(obj) {
+        // HACK: Convert Object from Firebase to Array and reverse it
+        return Object.keys(obj).map(function(key) {
+          return obj[key];
+        }).reverse();
+      }
     }
 
     window.customElements.define(TutorialsView.is, TutorialsView);
