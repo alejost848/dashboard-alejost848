@@ -29,7 +29,13 @@
     "polymer-sortablejs": "bmwalters/polymer-sortablejs#2.0-preview",
     "paper-progress": "PolymerElements/paper-progress#^2.0.1",
     "moment": "^2.19.1",
-    "paper-fab": "PolymerElements/paper-fab#^2.0.0"
+    "paper-fab": "PolymerElements/paper-fab#^2.0.0",
+    "google-youtube": "GoogleWebComponents/google-youtube#^2.0.0",
+    "photo-gallery": "supachailllpay/photo-gallery#^2.0.4",
+    "vibrant": "*",
+    "paper-chip": "ThomasCybulski/paper-chip#^2.0.20",
+    "paper-date-picker": "polymer-paper-date-picker#2.0-preview",
+    "paper-dialog": "PolymerElements/paper-dialog#^2.0.1"
   },
   "resolutions": {
     "polymer": "^2.0.0"
