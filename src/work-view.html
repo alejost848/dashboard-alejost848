@@ -43,21 +43,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       :host{
         --progress-color: #333;
       }
+
       paper-chip-input-autocomplete{
-        --paper-input-container-input-color: white; /*Text color*/
         --paper-chip-autocomplete-focus-color: var(--progress-color); /*Underline color when focused*/
-        --paper-input-container-underline:{ /*Underline*/
-          border: 1px rgba(255, 255, 255, 0.05) solid;
-        }
         --paper-input-container-color: rgba(255, 255, 255, 0.7); /*Label color when not focused*/
-        --paper-chip-background-color: rgba(100, 100, 100, 0.1);
-        --paper-chip-active-background-color: rgba(120, 120, 120, 0.1);
+
+        --paper-chip-background-color: rgba(255, 255, 255, 0.05);
+        --paper-chip-active-background-color: rgba(255, 255, 255, 0.1);
+
         --paper-chip-label-color: rgba(255, 255, 255, 0.9);
-        --paper-chip-close-color: rgba(0, 0, 0, 0.2);
-        --paper-chip-close-icon-color: rgba(255, 255, 255, 0.4);
+        --paper-chip-close-color: white;
+        --paper-chip-close-icon-color: #444;
       }
       #categories_input{
         --paper-chip-autocomplete-focus-color: white; /*Underline color when focused*/
+        --paper-chip-background-color: rgba(0, 0, 0, 0.05);
+        --paper-chip-active-background-color: rgba(0, 0, 0, 0.1);
       }
       paper-input, paper-textarea{
         --paper-input-container-focus-color: var(--progress-color);
