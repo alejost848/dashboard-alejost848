@@ -41,6 +41,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="lazy-import" href="analytics-view.html">
 <link rel="lazy-import" href="youtube-analytics-view.html">
 <link rel="lazy-import" href="releases-view.html">
+
+<link rel="lazy-import" href="work-view.html">
+
 <link rel="lazy-import" href="error-view.html">
 
 <dom-module id="dashboard-app">
@@ -139,11 +142,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         color: var(--paper-red-700);
       }
 
+      app-header{
+        background-color: transparent;
+      }
+
+      iron-pages{
+        @apply --layout-vertical;
+        @apply --layout-center;
+      }
+
       iron-pages > * {
         width: 100%;
-        max-width: 1400px;
-        padding: 100px;
+        max-width: 1100px;
         box-sizing: border-box;
+        padding: 100px 20px;
       }
     </style>
 
@@ -176,7 +188,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       status-known="{{statusKnown}}">
     </firebase-auth>
 
-    <app-drawer-layout fullbleed responsive-width="960px" narrow="{{narrow}}" force-narrow="[[!signedIn]]" on-narrow-changed="_narrowChanged">
+    <app-drawer-layout id="drawer_layout" fullbleed responsive-width="960px" narrow="{{narrow}}" force-narrow="[[!signedIn]]" on-narrow-changed="_narrowChanged">
       <!-- Drawer content -->
       <app-drawer id="drawer" slot="drawer" swipe-open="[[narrow]]" disable-swipe="[[!signedIn]]" transition-duration="[[_drawerTransitionDuration]]">
         <div id="drawer_wrapper" class="layout vertical">
@@ -256,7 +268,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <app-header slot="header" hidden="[[!narrow]]">
             <app-toolbar>
               <paper-icon-button icon="alejost-icons:menu" drawer-toggle></paper-icon-button>
-              <div main-title>Dashboard</div>
             </app-toolbar>
           </app-header>
         </template>
@@ -275,6 +286,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <analytics-view name="analytics"></analytics-view>
             <youtube-analytics-view name="youtube-analytics"></youtube-analytics-view>
             <releases-view name="releases"></releases-view>
+
+            <work-view name="work" route="[[subroute]]" toast-open="[[toastOpen]]"></work-view>
+
             <error-view name="error"></error-view>
           </iron-pages>
         </template>
