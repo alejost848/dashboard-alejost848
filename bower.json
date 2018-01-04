@@ -38,8 +38,7 @@
     "paper-dialog": "PolymerElements/paper-dialog#^2.0.1"
   },
   "resolutions": {
-    "polymer": "^2.0.0",
-    "Sortable": "^1.4.2"
+    "polymer": "^2.0.0"
   },
   "devDependencies": {
     "web-component-tester": "Polymer/web-component-tester#^6.0.0"
