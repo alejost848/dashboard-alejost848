@@ -23,9 +23,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
 
 <link rel="import" href="../bower_components/google-youtube/google-youtube.html">
-<link rel="import" href="../bower_components/photo-gallery/photo-gallery.html">
+<link rel="import" href="../bower_components/polymer-sortablejs/polymer-sortablejs.html">
 
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-storage-ref.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-storage-multiupload.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-storage-upload-task.html">
 
 <link rel="import" href="shared-styles.html">
 <link rel="import" href="single-view-shared-styles.html">
@@ -103,6 +106,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         @apply --layout-horizontal;
         margin-bottom: 24px;
       }
+      .info_group{
+        width: 100%;
+      }
       .info_group:nth-child(2){
         padding: 0px 30px;
       }
@@ -140,9 +146,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         margin-bottom: 2px;
       }
 
-      photo-gallery .item{
-        background-color: var(--card-image-bg-color);
-      }
       .multimedia_group{
         margin-top: 36px;
       }
@@ -152,6 +155,83 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       .video_item{
         width: calc(50% - 4px);
         margin-bottom: 8px;
+      }
+      .image{
+        width: calc(25% - 8px);
+        height: 150px;
+        margin: 4px;
+        background-color: var(--card-image-bg-color);
+        cursor: move;
+      	cursor: -webkit-grabbing;
+      }
+
+      /* Images upload */
+
+      #dragArea {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 10px;
+        margin-bottom: 12px;
+        border: 2px dashed #444;
+      }
+      #explore_files{
+        background-color: var(--progress-color);
+      }
+      #drop_files_icon{
+        margin-left: 16px;
+        color: #888;
+      }
+      #drop_files_label{
+        color: #888;
+        font-size: 14px;
+        margin-left: 8px;
+      }
+
+      [part="row"] {
+        padding: 0px 10px;
+        font-size: 14px;
+        color: #aaa;
+      }
+
+      .file_progress{
+        width: 100%;
+        --paper-progress-active-color: var(--progress-color);
+      }
+      #file_list{
+        margin-top: 10px;
+      }
+      .file_item{
+        padding: 5px 0;
+      }
+      .file_state{
+        margin-right: 8px;
+        padding: 8px;
+        color: var(--progress-color);
+      }
+      .file_title{
+        font-size: 14px;
+        font-weight: 500;
+        color: #aaa;
+      }
+      .file_size{
+        font-size: 12px;
+        color: #aaa;
+      }
+      .file_percentage{
+        font-size: 12px;
+        color: #aaa;
+        margin-left: 4px;
+      }
+      .file_item paper-icon-button{
+        color: #aaa;
+      }
+
+      #save_button{
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        padding: 6px 16px;
+        background-color: #212121;
       }
 
       @media (max-width: 600px) {
@@ -183,17 +263,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <div id="title_header" class="layout horizontal center">
       <template is="dom-if" if="[[dataLoaded]]">
         <div>
-          <paper-input id="title_input" label="Title" value="{{work.title}}"></paper-input>
+          <paper-input id="title_input" label="Title" value="{{work.title}}" placeholder="Add a title"></paper-input>
           <paper-chip-input-autocomplete
             id="categories_input"
-            label="Add a category..."
-            no-label-float items="[[work.categories]]"
+            no-label-float
+            items="[[work.categories]]"
             additional-items source="[[states]]"
             closable>
           </paper-chip-input-autocomplete>
         </div>
       </template>
     </div>
+
+    <paper-button id="save_button" on-tap="upload" raised class="raised_button">Save</paper-button>
+
     <div id="card">
       <template is="dom-if" if="[[!online]]">
         <div id="placeholder_card">
@@ -241,25 +324,39 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <div id="information">
             <div class="info_group info_item flex-4 layout vertical start">
 
-              <paper-input id="date_input" label="Published date" value="{{work.publishedDate}}" placeholder="YYYY-MM-DD">
-                <paper-icon-button slot="suffix" icon="alejost-icons:event" on-tap="_openDatePicker"></paper-icon-button>
-              </paper-input>
-
-              <paper-textarea id="description" label="Description" value="{{work.shortDescription}}"></paper-textarea>
+              <div class="info_group">                
+                <div class="info_item layout vertical start">
+                  <div class="info_item_title">Slug</div>
+                  <paper-input label="Slug" no-label-float value="{{work.slug}}"></paper-input>
+                </div>
+                <div class="info_item">
+                  <div class="info_item_title">Published date</div>
+                  <paper-input id="date_input" no-label-float value="{{work.publishedDate}}" placeholder="YYYY-MM-DD">
+                    <paper-icon-button slot="suffix" icon="alejost-icons:event" on-tap="_openDatePicker"></paper-icon-button>
+                  </paper-input>
+                </div>
+                <div class="info_item">
+                  <div class="info_item_title">Description</div>
+                  <paper-textarea id="description" no-label-float value="{{work.shortDescription}}" placeholder="Add a description"></paper-textarea>
+                </div>
+              </div>
               <span class="flex"></span>
-              <a id="action_link" href="[[work.button.url]]" target="_blank" class="link" rel="noopener">
-                <paper-button raised id="action_button" class="raised_button">
-                  [[work.button.text]]
-                  <iron-icon icon="alejost-icons:open-in-new"></iron-icon>
-                </paper-button>
-              </a>
+
+              <div class="info_group">
+                <div class="info_item">
+                  <div class="info_item_title">Action button</div>
+                  <paper-input label="Text" value="{{work.button.text}}"></paper-input>
+                  <paper-input label="URL" value="{{work.button.url}}"></paper-input>
+                </div>
+              </div>
             </div>
             <div class="info_group flex-3">
               <div class="info_item">
                 <div class="info_item_title">Client</div>
                 <paper-chip-input-autocomplete
-                  label="Add a client..."
-                  no-label-float items="[[work.clients]]"
+                  label="Add a client"
+                  no-label-float
+                  items="[[work.clients]]"
                   source="[[states]]"
                   additional-items
                   closable>
@@ -268,8 +365,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               <div class="info_item">
                 <div class="info_item_title">Tools used</div>
                 <paper-chip-input-autocomplete
-                  label="Add a tool..."
-                  no-label-float items="[[work.toolsUsed]]"
+                  label="Add a tool"
+                  no-label-float
+                  items="[[work.toolsUsed]]"
                   source="[[states]]"
                   additional-items
                   closable>
@@ -280,8 +378,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               <div class="info_item">
                 <div class="info_item_title">Credits</div>
                 <paper-chip-input-autocomplete
-                  label="Add a person..."
-                  no-label-float items="[[work.credits]]"
+                  label="Add a person"
+                  no-label-float
+                  items="[[work.credits]]"
                   source="[[states]]"
                   additional-items
                   closable>
@@ -292,11 +391,112 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
           <div class="multimedia_group">
             <div class="multimedia_title info_item_title">Images</div>
-            <photo-gallery height="150">
+
+            <div id="dragArea" on-dragover="_handleDragOver" on-dragleave="_handleDragLeave" on-drop="_handleFileSelect">
+
+              <input id="file-uploader" type="file" multiple accept="image/*" on-change="onFileUpload" style="display:none">
+              <div class="layout horizontal center">
+                <paper-button id="explore_files" raised on-tap="_triggerFileSelection" class="raised_button">Select images...</paper-button>
+                <iron-icon id="drop_files_icon" icon="alejost-icons:file-upload"></iron-icon>
+                <div id="drop_files_label">Drag files here</div>
+              </div>
+
+              <firebase-storage-multiupload
+                id="fs"
+                auto
+                app-name="alejost848"
+                files="[[imageFiles]]"
+                path="/works/[[routeData.slug]]"
+                upload-tasks="{{uploadedFiles}}"
+                on-error="catchError">
+              </firebase-storage-multiupload>
+
+              <div id="file_list">
+                <template is="dom-repeat" items="[[uploadedFiles]]">
+                  <firebase-storage-upload-task
+                    app-name="alejost848"
+                    task="[[item]]"
+                    id="task-[[index]]"
+                    bytes-transferred="{{item.bytesTransferred}}"
+                    total-bytes="{{item.totalBytes}}"
+                    state="{{item.state}}"
+                    download-url="{{item.downloadUrl}}"
+                    metadata="{{item.metadata}}"
+                    path="{{item.path}}">
+                  </firebase-storage-upload-task>
+
+                  <div class="file_item">
+                    <div class="layout horizontal center">
+
+                      <template is="dom-if" if="{{isEqual(item.state, 'success')}}">
+                        <iron-icon class="file_state" icon="alejost-icons:check"></iron-icon>
+                      </template>
+
+                      <div class="file_info">
+                        <div class="file_title">[[item.snapshot.ref.fullPath]]</div>
+                        <div class="layout horizontal">
+                          <div class="file_size">[[formatBytes(item.totalBytes, 1)]]</div>
+                          <template is="dom-if" if="{{!isEqual(item.state, 'success')}}">
+                            <div class="file_percentage">/ [[computePercentage(item.totalBytes, item.bytesTransferred)]]%</div>
+                          </template>
+                        </div>
+                      </div>
+
+                      <span class="flex"></span>
+
+                      <div class="file_actions layout horizontal center">
+                        <template is="dom-if" if="{{isEqual(item.state, 'success')}}">
+                          <firebase-storage-ref
+                            app-name="alejost848"
+                            path="{{item.path}}"
+                            storage-uri="{{gsUri}}"
+                            id="ref-[[index]]"
+                            metadata="{{item.refMetadata}}"
+                            download-url="{{item.refDownloadUrl}}">
+                          </firebase-storage-ref>
+
+                          <a href="{{item.refDownloadUrl}}" target="_blank" class="link" tabindex="-1" rel="noopener">
+                            <paper-icon-button icon="alejost-icons:file-download"></paper-icon-button>
+                          </a>
+
+                          <paper-icon-button icon="alejost-icons:delete" value="{{index}}" on-tap="deleteFile"></paper-icon-button>
+                        </template>
+
+                        <template is="dom-if" if="[[!isEqual(item.state, 'success')]]">
+                          <template is="dom-if" if="[[isEqual(item.state, 'running')]]">
+                            <paper-icon-button icon="alejost-icons:pause" value="{{index}}" on-tap="pause"></paper-icon-button>
+                            <paper-icon-button icon="alejost-icons:close" value="{{index}}" on-tap="cancel"></paper-icon-button>
+                          </template>
+
+                          <template is="dom-if" if="[[isEqual(item.state, 'paused')]]">
+                            <paper-icon-button icon="alejost-icons:play-arrow" value="{{index}}" on-tap="resume"></paper-icon-button>
+                          </template>
+                        </template>
+                      </div>
+
+                    </div>
+
+                    <template is="dom-if" if="[[!isEqual(item.state, 'success')]]">
+                      <paper-progress
+                        class="file_progress"
+                        value="{{item.bytesTransferred}}"
+                        min="0"
+                        max="{{item.totalBytes}}">
+                      </paper-progress>
+                    </template>
+
+                  </div>
+
+                </template>
+              </div>
+
+            </div>
+
+            <sortable-js class="layout horizontal wrap" on-sortable-sort="sortImages">
               <template is="dom-repeat" items="[[work.images]]" as="image">
-                <div class="item" data-url$="[[image]]"></div>
+                <iron-image class="image" src="[[image]]" preload fade sizing="cover"></iron-image>
               </template>
-            </photo-gallery>
+            </sortable-js>
           </div>
 
           <div class="multimedia_group">
@@ -456,6 +656,77 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _openDatePicker(){
         this.$.datepicker_dialog.open();
+      }
+
+      sortImages(e){
+        let imagesArray = [];
+        let images = this.shadowRoot.querySelectorAll(".image");
+        for (var i = 0; i < images.length; i++) {
+          imagesArray.push(images[i].src);
+        }
+        console.log(imagesArray);
+      }
+
+      isEqual(a, b) {
+        return a === b;
+      }
+
+      upload() {
+        this.shadowRoot.querySelector('#fs').upload(this.shadowRoot.querySelector('#file-uploader').files)
+      }
+      cancel(e) {
+        this.shadowRoot.querySelector('#task-' + e.target.value).cancel();
+      }
+      resume(e) {
+        this.shadowRoot.querySelector('#task-' + e.target.value).resume();
+      }
+      pause(e) {
+        this.shadowRoot.querySelector('#task-' + e.target.value).pause();
+      }
+      deleteFile(e) {
+        this.shadowRoot.querySelector('#ref-' + e.target.value).delete()
+          .then(function() {
+            console.log("File deleted successfully");
+          }).catch(function(error) {
+            console.log("Uh-oh, an error occurred!");
+          });
+      }
+
+      onFileUpload(e){
+        this.imageFiles = e.target.files;
+      }
+
+      _triggerFileSelection(){
+        this.shadowRoot.querySelector('#file-uploader').click();
+      }
+
+      catchError(e) {
+        console.log(e.detail.message);
+      }
+
+      _handleDragOver(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+        this.shadowRoot.querySelector("#dragArea").style.backgroundColor = "#1b1b1b";
+      }
+      _handleDragLeave(e) {
+        this.shadowRoot.querySelector("#dragArea").style.backgroundColor = "transparent";
+      }
+      _handleFileSelect(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        this.imageFiles = e.dataTransfer.files;
+        this.shadowRoot.querySelector("#dragArea").style.backgroundColor = "transparent";
+      }
+
+      formatBytes(a,b){
+        if(0==a)return"0 Bytes";
+        var c=1024,d=b||2,e=["Bytes","KB","MB","GB","TB","PB","EB","ZB","YB"],f=Math.floor(Math.log(a)/Math.log(c));
+        return parseFloat((a/Math.pow(c,f)).toFixed(d))+" "+e[f];
+      }
+      computePercentage(totalBytes, bytesTransferred){
+        return Math.round(bytesTransferred / totalBytes * 100);
       }
     }
 
