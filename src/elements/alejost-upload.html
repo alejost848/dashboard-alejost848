@@ -1,0 +1,352 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+
+<link rel="import" href="../../bower_components/paper-progress/paper-progress.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+
+<link rel="import" href="../../bower_components/polymerfire/firebase-storage-ref.html">
+<link rel="import" href="../../bower_components/polymerfire/firebase-storage-multiupload.html">
+<link rel="import" href="../../bower_components/polymerfire/firebase-storage-upload-task.html">
+
+<link rel="import" href="../shared-styles.html">
+
+<dom-module id="alejost-upload">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+      }
+
+      #dragArea {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 10px;
+        margin-bottom: 12px;
+        border: 2px dashed #444;
+      }
+      #explore_files{
+        background-color: var(--progress-color);
+      }
+      #explore_files[disabled]{
+        background-color: #222;
+        color: #888;
+      }
+      #drop_files_icon{
+        margin-left: 16px;
+        color: #888;
+      }
+      #drop_files_label{
+        color: #888;
+        font-size: 14px;
+        margin-left: 8px;
+      }
+
+      .file_progress{
+        width: 100%;
+        --paper-progress-active-color: var(--progress-color);
+      }
+      .file_item{
+        padding: 5px 0;
+      }
+      .file_state{
+        margin-right: 8px;
+        padding: 8px;
+        color: var(--progress-color);
+      }
+      .file_title{
+        font-size: 14px;
+        font-weight: 500;
+        color: #aaa;
+      }
+      .file_size{
+        font-size: 12px;
+        color: #aaa;
+      }
+      .file_percentage{
+        font-size: 12px;
+        color: #aaa;
+        margin-left: 4px;
+      }
+      .file_item paper-icon-button{
+        color: #aaa;
+      }
+    </style>
+
+    <input id="file_uploader" type="file" multiple="[[multiple]]" accept="image/*" on-change="onFileUpload" style="display:none">
+
+    <div id="dragArea" on-dragover="_handleDragOver" on-dragleave="_handleDragLeave" on-drop="_handleFileSelect">
+      <div class="layout horizontal center">
+        <paper-button id="explore_files" raised on-tap="_triggerFileSelection" class="raised_button" disabled="[[!acceptUploads]]">[[buttonText]]</paper-button>
+        <iron-icon id="drop_files_icon" icon="alejost-icons:file-upload"></iron-icon>
+        <div id="drop_files_label">Drag files here</div>
+      </div>
+
+      <firebase-storage-multiupload
+        id="firebase_storage"
+        auto
+        app-name="alejost848"
+        files="[[imageFiles]]"
+        path="[[path]]"
+        upload-tasks="{{uploadedFiles}}"
+        on-error="catchError">
+      </firebase-storage-multiupload>
+
+      <div id="file_list">
+        <template is="dom-repeat" items="[[uploadedFiles]]">
+          <firebase-storage-upload-task
+            app-name="alejost848"
+            task="[[item]]"
+            id="task-[[index]]"
+            bytes-transferred="{{item.bytesTransferred}}"
+            total-bytes="{{item.totalBytes}}"
+            state="{{item.state}}"
+            download-url="{{item.downloadUrl}}"
+            metadata="{{item.metadata}}"
+            path="{{item.path}}"
+            on-state-changed="_uploadTaskStateChanged">
+          </firebase-storage-upload-task>
+
+          <div class="file_item">
+            <div class="layout horizontal center">
+
+              <template is="dom-if" if="{{isEqual(item.state, 'success')}}">
+                <iron-icon class="file_state" icon="alejost-icons:check"></iron-icon>
+              </template>
+              <template is="dom-if" if="{{isEqual(item.state, 'running')}}">
+                <iron-icon class="file_state" icon="alejost-icons:schedule"></iron-icon>
+              </template>
+
+              <div class="file_info">
+                <a href="{{item.refDownloadUrl}}" target="_blank" class="link" tabindex="-1" rel="noopener">
+                  <div class="file_title">[[item.snapshot.ref.name]]</div>
+                </a>
+                <div class="layout horizontal">
+                  <div class="file_size">[[formatBytes(item.totalBytes, 1)]]</div>
+                  <template is="dom-if" if="{{!isEqual(item.state, 'success')}}">
+                    <div class="file_percentage">/ [[computePercentage(item.totalBytes, item.bytesTransferred)]]%</div>
+                  </template>
+                </div>
+              </div>
+
+              <span class="flex"></span>
+
+              <div class="file_actions layout horizontal center">
+                <template is="dom-if" if="{{isEqual(item.state, 'success')}}">
+                  <firebase-storage-ref
+                    app-name="alejost848"
+                    path="{{item.path}}"
+                    storage-uri="{{gsUri}}"
+                    id="ref-[[index]]"
+                    metadata="{{item.refMetadata}}"
+                    download-url="{{item.refDownloadUrl}}">
+                  </firebase-storage-ref>
+
+                  <!-- <template is="dom-if" if="[[!multiple]]"> -->
+                    <paper-icon-button icon="alejost-icons:delete" value="[[index]]" on-tap="deleteFile"></paper-icon-button>
+                  <!-- </template> -->
+                </template>
+
+                <template is="dom-if" if="[[!isEqual(item.state, 'success')]]">
+                  <template is="dom-if" if="[[isEqual(item.state, 'running')]]">
+                    <paper-icon-button icon="alejost-icons:pause" value="[[index]]" on-tap="pause"></paper-icon-button>
+                    <paper-icon-button icon="alejost-icons:close" value="[[index]]" on-tap="cancel"></paper-icon-button>
+                  </template>
+
+                  <template is="dom-if" if="[[isEqual(item.state, 'paused')]]">
+                    <paper-icon-button icon="alejost-icons:play-arrow" value="[[index]]" on-tap="resume"></paper-icon-button>
+                  </template>
+                </template>
+              </div>
+
+            </div>
+
+            <template is="dom-if" if="[[!isEqual(item.state, 'success')]]">
+              <paper-progress
+                class="file_progress"
+                value="{{item.bytesTransferred}}"
+                min="0"
+                max="{{item.totalBytes}}">
+              </paper-progress>
+            </template>
+
+          </div>
+
+        </template>
+      </div>
+
+    </div>
+
+  </template>
+
+  <script>
+    class AlejostUpload extends Polymer.Element {
+      static get is() { return 'alejost-upload'; }
+
+      static get properties() {
+        return {
+          path: String,
+          acceptUploads: {
+            type: Boolean,
+            value: false
+          },
+          buttonText: {
+            type: String,
+            value: "Select files..."
+          },
+          multiple:{
+            type: Boolean,
+            value: false
+          }
+        };
+      }
+
+      ready(){
+        super.ready();
+        this.finishedUploads = 0;
+      }
+
+      onFileUpload(e){
+        if (!this.multiple) {
+          this.$.firebase_storage.clearTasks();
+          this.acceptUploads = false;
+        }
+        this.imageFiles = [];
+        this.imageFiles = e.target.files;
+      }
+
+      catchError(e) {
+        console.log(e.detail.message);
+      }
+
+      _triggerFileSelection(){
+        this.$.file_uploader.click();
+      }
+
+      _handleDragOver(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+
+        this.$.dragArea.style.backgroundColor = "#1b1b1b";
+      }
+      _handleDragLeave(e) {
+        this.$.dragArea.style.backgroundColor = "transparent";
+      }
+      _handleFileSelect(e) {
+        e.stopPropagation();
+        e.preventDefault();
+
+        if (this.acceptUploads) {
+          if (!this.multiple) {
+            this.$.firebase_storage.clearTasks();
+            this.acceptUploads = false;
+          }
+
+          this.imageFiles = [];
+          this.imageFiles = e.dataTransfer.files;
+        }
+
+        this.$.dragArea.style.backgroundColor = "transparent";
+      }
+
+      formatBytes(a,b){
+        if(0==a)return"0 Bytes";
+        var c=1024,d=b||2,e=["Bytes","KB","MB","GB","TB","PB","EB","ZB","YB"],f=Math.floor(Math.log(a)/Math.log(c));
+        return parseFloat((a/Math.pow(c,f)).toFixed(d))+" "+e[f];
+      }
+
+      computePercentage(totalBytes, bytesTransferred){
+        return Math.round(bytesTransferred / totalBytes * 100);
+      }
+
+      isEqual(a, b) {
+        return a === b;
+      }
+
+      cancel(e) {
+        this.shadowRoot.querySelector('#task-' + e.target.value).cancel();
+      }
+      resume(e) {
+        this.shadowRoot.querySelector('#task-' + e.target.value).resume();
+      }
+      pause(e) {
+        this.shadowRoot.querySelector('#task-' + e.target.value).pause();
+      }
+      deleteFile(e) {
+        let fileRef = this.shadowRoot.querySelector('#ref-' + e.target.value);
+        let filePath = fileRef.path;
+        fileRef.delete()
+          .then(() => {
+
+            //Remove element from file list
+            for (var i = 0; i < this.uploadedFiles.length; i++) {
+              if (this.uploadedFiles[i].path == filePath) {
+                this.splice('uploadedFiles', i, 1);
+                this.finishedUploads -= 1;
+              }
+            }
+
+            //Clear the list of images and accept uploads again for single file uploads
+            if (!this.multiple) {
+              this.imageFiles = [];
+              this.$.firebase_storage.clearTasks();
+              this.acceptUploads = true;
+              this.finishedUploads = 0;
+            }
+            this.dispatchEvent(new CustomEvent('file-removed', { detail: {value: filePath}, bubbles: true, composed: true }));
+            console.log("File deleted successfully");
+          }).catch(function(error) {
+            console.log("Uh-oh, an error occurred!", error);
+          });
+      }
+
+      _uploadTaskStateChanged(e){
+        let state = e.detail.value;
+        if (state == "success") {
+          // for (var i = 0; i < this.uploadedFiles.length; i++) {
+          //   if (this.uploadedFiles[i].path == e.target.path) {
+          //     this.splice('uploadedFiles', i, 1);
+          //     this.finishedUploads -= 1;
+          //   }
+          // }
+
+          this.finishedUploads += 1;
+          if (this.finishedUploads == this.uploadedFiles.length) {
+            // Files got uploaded!
+            setTimeout(() => { // HACK: We wait 1 ms so we can get the file references
+              let promises = [];
+              let filesInfo = [];
+              for (var i = 0; i < this.uploadedFiles.length; i++) {
+                let fileRef = this.shadowRoot.querySelector('#ref-' + i);
+                promises.push(fileRef.getDownloadURL().then((downloadUrl) => { // HACK: We wait until the downloadURL is ready and continue
+                  filesInfo.push({
+                    path: fileRef.path,
+                    storageUri: fileRef.storageUri,
+                    downloadUrl: downloadUrl,
+                  });
+                }));
+              }
+              Promise.all(promises).then(() => {
+                this.dispatchEvent(new CustomEvent('uploads-completed', { detail: {value: filesInfo}, bubbles: true, composed: true }));
+              });
+            }, 1);
+          }
+        }
+      }
+    }
+
+    window.customElements.define(AlejostUpload.is, AlejostUpload);
+  </script>
+</dom-module>
