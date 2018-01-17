@@ -35,7 +35,8 @@
     "vibrant": "*",
     "paper-chip": "alejost848/paper-chip#master",
     "paper-date-picker": "polymer-paper-date-picker#2.0-preview",
-    "paper-dialog": "PolymerElements/paper-dialog#^2.0.1"
+    "paper-dialog": "PolymerElements/paper-dialog#^2.0.1",
+    "paper-swatch-picker": "PolymerElements/paper-swatch-picker#^2.0.1"
   },
   "resolutions": {
     "polymer": "^2.0.0"
