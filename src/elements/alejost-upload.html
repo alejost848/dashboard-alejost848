@@ -257,7 +257,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           }
 
           this.imageFiles = [];
-          this.imageFiles = e.dataTransfer.files;          
+          this.imageFiles = e.dataTransfer.files;
           this.filesPending = e.target.files.length;
         }
 
@@ -319,17 +319,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
         let fileRef = e.target;
 
-        this.filesInfo.push({
+        let imageInfo = {
           path: fileRef.path,
-          storageUri: fileRef.storageUri,
-          downloadUrl: fileRef.downloadUrl,
-        });
-
+          downloadUrl: fileRef.downloadUrl
+        };
         this.filesPending -= 1;
+        this.dispatchEvent(new CustomEvent('upload-completed', { detail: {value: imageInfo}, bubbles: true, composed: true }));
 
         if (this.filesPending == 0) {
-          this.dispatchEvent(new CustomEvent('uploads-completed', { detail: {value: this.filesInfo}, bubbles: true, composed: true }));
-
           if (this.multiple) {
             this.$.firebase_storage.clearTasks();
           } else {
