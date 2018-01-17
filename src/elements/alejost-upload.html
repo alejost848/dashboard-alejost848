@@ -114,8 +114,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             state="{{item.state}}"
             download-url="{{item.downloadUrl}}"
             metadata="{{item.metadata}}"
-            path="{{item.path}}"
-            on-state-changed="_uploadTaskStateChanged">
+            path="{{item.path}}">
           </firebase-storage-upload-task>
 
           <div class="file_item">
@@ -148,14 +147,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     app-name="alejost848"
                     path="{{item.path}}"
                     storage-uri="{{gsUri}}"
+                    index="[[index]]"
                     id="ref-[[index]]"
                     metadata="{{item.refMetadata}}"
-                    download-url="{{item.refDownloadUrl}}">
+                    download-url="{{item.refDownloadUrl}}"
+                    on-download-url-changed="_handleFileInfo">
                   </firebase-storage-ref>
 
-                  <!-- <template is="dom-if" if="[[!multiple]]"> -->
+                  <template is="dom-if" if="[[!multiple]]">
                     <paper-icon-button icon="alejost-icons:delete" value="[[index]]" on-tap="deleteFile"></paper-icon-button>
-                  <!-- </template> -->
+                  </template>
                 </template>
 
                 <template is="dom-if" if="[[!isEqual(item.state, 'success')]]">
@@ -214,7 +215,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       ready(){
         super.ready();
-        this.finishedUploads = 0;
+        this.filesInfo = [];
       }
 
       onFileUpload(e){
@@ -224,6 +225,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
         this.imageFiles = [];
         this.imageFiles = e.target.files;
+        this.filesPending = e.target.files.length;
       }
 
       catchError(e) {
@@ -255,7 +257,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           }
 
           this.imageFiles = [];
-          this.imageFiles = e.dataTransfer.files;
+          this.imageFiles = e.dataTransfer.files;          
+          this.filesPending = e.target.files.length;
         }
 
         this.$.dragArea.style.backgroundColor = "transparent";
@@ -294,7 +297,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             for (var i = 0; i < this.uploadedFiles.length; i++) {
               if (this.uploadedFiles[i].path == filePath) {
                 this.splice('uploadedFiles', i, 1);
-                this.finishedUploads -= 1;
               }
             }
 
@@ -303,7 +305,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               this.imageFiles = [];
               this.$.firebase_storage.clearTasks();
               this.acceptUploads = true;
-              this.finishedUploads = 0;
             }
             this.dispatchEvent(new CustomEvent('file-removed', { detail: {value: filePath}, bubbles: true, composed: true }));
             console.log("File deleted successfully");
@@ -312,36 +313,27 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           });
       }
 
-      _uploadTaskStateChanged(e){
-        let state = e.detail.value;
-        if (state == "success") {
-          // for (var i = 0; i < this.uploadedFiles.length; i++) {
-          //   if (this.uploadedFiles[i].path == e.target.path) {
-          //     this.splice('uploadedFiles', i, 1);
-          //     this.finishedUploads -= 1;
-          //   }
-          // }
+      _handleFileInfo(e){
+        if (!e.detail.value) {
+          return;
+        }
+        let fileRef = e.target;
 
-          this.finishedUploads += 1;
-          if (this.finishedUploads == this.uploadedFiles.length) {
-            // Files got uploaded!
-            setTimeout(() => { // HACK: We wait 1 ms so we can get the file references
-              let promises = [];
-              let filesInfo = [];
-              for (var i = 0; i < this.uploadedFiles.length; i++) {
-                let fileRef = this.shadowRoot.querySelector('#ref-' + i);
-                promises.push(fileRef.getDownloadURL().then((downloadUrl) => { // HACK: We wait until the downloadURL is ready and continue
-                  filesInfo.push({
-                    path: fileRef.path,
-                    storageUri: fileRef.storageUri,
-                    downloadUrl: downloadUrl,
-                  });
-                }));
-              }
-              Promise.all(promises).then(() => {
-                this.dispatchEvent(new CustomEvent('uploads-completed', { detail: {value: filesInfo}, bubbles: true, composed: true }));
-              });
-            }, 1);
+        this.filesInfo.push({
+          path: fileRef.path,
+          storageUri: fileRef.storageUri,
+          downloadUrl: fileRef.downloadUrl,
+        });
+
+        this.filesPending -= 1;
+
+        if (this.filesPending == 0) {
+          this.dispatchEvent(new CustomEvent('uploads-completed', { detail: {value: this.filesInfo}, bubbles: true, composed: true }));
+
+          if (this.multiple) {
+            this.$.firebase_storage.clearTasks();
+          } else {
+            this.filesInfo = [];
           }
         }
       }
