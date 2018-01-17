@@ -21,6 +21,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/paper-chip/paper-chip-input-autocomplete.html">
 <link rel="import" href="../bower_components/paper-date-picker/paper-date-picker.html">
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-swatch-picker/paper-swatch-picker.html">
+<link rel="import" href="../bower_components/neon-animation/web-animations.html">
 
 <link rel="import" href="../bower_components/google-youtube/google-youtube.html">
 <link rel="import" href="../bower_components/polymer-sortablejs/polymer-sortablejs.html">
@@ -192,12 +194,28 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         --paper-input-container-focus-color: white;
       }
 
-      #save_button{
+      #button_actions{
         position: absolute;
-        top: 16px;
-        right: 16px;
-        padding: 6px 16px;
-        background-color: #212121;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 56px;
+        padding: 0 24px;
+        box-sizing: border-box;
+      }
+      #save_button{
+        padding: 6px 20px;
+      }
+      paper-swatch-picker{
+        --paper-swatch-picker-color-size: 16px;
+        --paper-icon-button-ink-color: transparent;
+        --paper-swatch-picker-icon:{
+          width: 75px;
+          height: 36px;
+          border-radius: 3px;
+          background-color: white;
+          @apply --shadow-elevation-2dp;
+        }
       }
 
       @media (max-width: 600px) {
@@ -228,7 +246,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <div>
 
         <paper-input id="title_input" label="Title" value="{{work.title}}" placeholder="Add a title" on-value-changed="_generateSlug"></paper-input>
-        <paper-input id="slug_input" label="Slug" value="{{workSlug}}" disabled="[[routeData.slug]]"></paper-input>
+        <paper-input id="slug_input" label="Slug" value="{{workSlug}}" disabled></paper-input>
 
         <paper-chip-input-autocomplete
           id="categories_input"
@@ -242,7 +260,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       </div>
     </div>
 
-    <paper-button id="save_button" on-tap="upload" raised class="raised_button">Save</paper-button>
+    <div id="button_actions" class="layout horizontal center">
+      <span class="flex"></span>
+      <paper-swatch-picker color="{{mainColor}}" horizontal-align="right" on-color-changed="_colorPickerChanged"></paper-swatch-picker>
+      <paper-button id="save_button" raised class="raised_button" on-tap="upload">Save</paper-button>
+    </div>
 
     <div id="card">
 
@@ -481,28 +503,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         if (!active) {
           this.stopPlayback();
 
-          //Change browser theme color
-          let metaThemeColor = document.querySelector('meta[name=theme-color]');
-
-          //Get a CSS property depending on whether the shady CSS polyfill is loaded:
-          let bgColor;
-          if (ShadyCSS) {
-            bgColor = ShadyCSS.getComputedStyleValue(this, '--app-background-color');
-          } else {
-            bgColor = getComputedStyle(this).getPropertyValue('--app-background-color');
-          }
-          metaThemeColor.setAttribute("content", bgColor);
-
           //Change background color for the work-view
           this.updateStyles({
             '--progress-color': '#333'
-          });
-        } else if (active && this.dataLoaded) {
-          this._updateMetadata();
-
-          //Change background color for the work-view
-          this.updateStyles({
-            '--progress-color': '#' + this.mainColor
           });
         }
       }
@@ -510,14 +513,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       _updateMetadata(){
         window.dispatchEvent(new CustomEvent('sherby-metadata', {
           detail: {
-            "og:site_name": "Alejandro Sanclemente",
-            "title": this.work.title + " | Alejandro Sanclemente",
-            "og:title": this.work.title + " | Alejandro Sanclemente",
-            "description": this.work.shortDescription,
-            "og:description": this.work.shortDescription,
-            "og:type": "article",
-            "og:image": this.work.thumbnail,
-            "og:url": window.location.href
+            "title": this.work.title || "New work"
           }
         }));
       }
@@ -529,21 +525,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         if (!swatches["Vibrant"]) {
           return;
         }
-        this.mainColor = swatches["Vibrant"].getHex().substring(1);
-
-        //Change browser theme color
-        let metaThemeColor = document.querySelector('meta[name=theme-color]');
-        metaThemeColor.setAttribute("content", '#' + this.mainColor);
+        this.mainColor = "#" + swatches["Vibrant"].getHex().substring(1);
 
         //Change background color
         this.updateStyles({
-          '--progress-color': '#' + this.mainColor
+          '--progress-color': this.mainColor
         });
       }
 
       _clearColor(){
         this.updateStyles({
           '--progress-color': '#333'
+        });
+      }
+
+      _colorPickerChanged(e){
+        let selectedColor = e.detail.value;
+        this.updateStyles({
+          '--progress-color': selectedColor
         });
       }
 
