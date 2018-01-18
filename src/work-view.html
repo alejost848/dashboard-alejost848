@@ -205,11 +205,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         box-sizing: border-box;
       }
       #save_button{
-        padding: 6px 20px;
+        padding: 6px 12px;
+      }
+      #save_button iron-icon{
+        margin-right: 6px;
       }
       paper-swatch-picker{
         --paper-swatch-picker-color-size: 16px;
-        --paper-icon-button-ink-color: transparent;
         --paper-swatch-picker-icon:{
           width: 75px;
           height: 36px;
@@ -235,6 +237,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <app-route route="{{route}}" pattern="/:slug" data="{{routeData}}"></app-route>
 
     <firebase-document
+      id="firebase_document"
       app-name="alejost848"
       path="/works/[[routeData.slug]]"
       data="{{data}}"
@@ -247,7 +250,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <div>
 
         <paper-input id="title_input" label="Title" value="{{work.title}}" placeholder="Add a title" on-value-changed="_generateSlug"></paper-input>
-        <paper-input id="slug_input" label="Slug" value="{{workSlug}}" disabled></paper-input>
+        <paper-input id="slug_input" label="Slug" value="[[workSlug]]" disabled></paper-input>
 
         <paper-chip-input-autocomplete
           id="categories_input"
@@ -265,8 +268,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <div id="button_actions" class="layout horizontal center">
       <span class="flex"></span>
-      <paper-swatch-picker color="{{work.mainColor}}" horizontal-align="right" on-color-changed="_colorPickerChanged"></paper-swatch-picker>
-      <paper-button id="save_button" raised class="raised_button" on-tap="upload">Save</paper-button>
+      <paper-swatch-picker color="{{work.mainColor}}" horizontal-align="right" noink on-color-changed="_colorPickerChanged"></paper-swatch-picker>
+      <paper-button id="save_button" raised class="raised_button" on-tap="upload">
+        <template is="dom-if" if="[[!routeData.slug]]">
+          <iron-icon icon="alejost-icons:file-upload"></iron-icon>
+          Publish
+        </template>
+        <template is="dom-if" if="[[routeData.slug]]">
+          <iron-icon icon="alejost-icons:save"></iron-icon>
+          Save changes
+        </template>
+      </paper-button>
     </div>
 
     <div id="card">
