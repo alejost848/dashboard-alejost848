@@ -272,11 +272,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           </app-header>
         </template>
         <template is="dom-if" if="[[statusKnown]]">
-          <iron-pages
-            selected="[[page]]"
-            attr-for-selected="name"
-            fallback-selection="error"
-            role="main">
+          <iron-pages selected="[[page]]" attr-for-selected="name" selected-attribute="active" fallback-selection="error" role="main">
             <login-view id="login_view" name="login" on-login-submit="login" on-reset-submit="reset"></login-view>
             <overview-view name="overview"></overview-view>
             <home-view name="home"></home-view>
