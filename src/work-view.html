@@ -253,10 +253,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           id="categories_input"
           label="Add a category"
           no-label-float
-          items="{{work.categories}}"
+          items="{{_computeCategories(work.categories)}}"
           additional-items
           source="[[states]]"
-          closable>
+          closable
+          on-chip-created="_categoryAdded"
+          on-chip-removed="_categoryRemoved">
         </paper-chip-input-autocomplete>
       </div>
     </div>
@@ -625,6 +627,23 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           return true;
         } else {
           return false;
+        }
+      }
+
+      _computeCategories(categories){
+        if (categories) {
+          return Object.values(categories);
+        }
+      }
+      _categoryAdded(e){
+        let categorySlug = this.replace(e.detail.chipLabel, {lower: true});
+        this.work.categories[categorySlug] = e.detail.chipLabel;
+      }
+      _categoryRemoved(e){
+        for (var key in this.work.categories) {
+          if (this.work.categories[key] == e.detail.chipLabel) {
+            delete this.work.categories[key];
+          }
         }
       }
 
