@@ -212,6 +212,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
       paper-swatch-picker{
         --paper-swatch-picker-color-size: 16px;
+        --paper-icon-button-ink-color: transparent;
         --paper-swatch-picker-icon:{
           width: 75px;
           height: 36px;
@@ -285,7 +286,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       <div id="cover_container">
 
-        <template is="dom-if" if="[[work.videoId]]" restamp="true" on-dom-change="_clearColor">
+        <template is="dom-if" if="[[work.videoId]]" restamp="true">
           <google-youtube
             id="video"
             fluid
@@ -295,7 +296,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           </google-youtube>
         </template>
 
-        <template is="dom-if" if="[[work.coverImage]]" restamp="true" on-dom-change="_clearColor">
+        <template is="dom-if" if="[[work.coverImage]]" restamp="true">
           <iron-image id="cover_image" src="[[work.coverImage]]" preload fade sizing="cover"></iron-image>
         </template>
 
@@ -322,11 +323,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       </div>
 
-      <!-- HACK: Hidden image for getting the main color -->
-      <template is="dom-if" if="[[work.videoId]]" restamp="true">
-        <img on-load="_getMainColor" src="https://cors-anywhere.herokuapp.com/https://i.ytimg.com/vi/[[work.videoId]]/mqdefault.jpg" crossorigin="Anonymous" hidden>
-      </template>
-      <img on-load="_getMainColor" src="https://cors-anywhere.herokuapp.com/[[work.coverImage]]" crossorigin="Anonymous" hidden>
+      <!-- Vibrant image -->
+      <img id="vibrant_image" src="[[_computeVibrantSource(work.videoId, work.coverImage)]]" crossorigin="Anonymous" hidden>
 
       <div id="card_content">
 
@@ -496,6 +494,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         if (!this._isEmptyObject(data)) {
           this.work = data;
           this.workSlug = this.routeData.slug;
+
+          this.updateStyles({
+            '--progress-color': this.work.mainColor
+          });
+          
           this._updateMetadata();
         } else {
           this._initializeObjects();
@@ -542,25 +545,38 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }));
       }
 
-      _getMainColor(e){
-        var vibrant = new Vibrant(e.target, 8, 5);
-        var swatches = vibrant.swatches();
-        //Stop execution if there's no vibrant color
-        if (!swatches["Vibrant"]) {
-          return;
+      _computeVibrantSource(videoId, coverImage){
+        if (videoId) {
+          return `https://cors-anywhere.herokuapp.com/https://i.ytimg.com/vi/${this.work.videoId}/mqdefault.jpg`;
         }
-        this.work.mainColor = swatches["Vibrant"].getHex();
+        if (coverImage) {
+          return `https://cors-anywhere.herokuapp.com/${this.work.coverImage}`;
+        }
+      }
 
-        //Change background color
-        this.updateStyles({
-          '--progress-color': this.work.mainColor
+      _getMainColor(){
+        let vibrantImage = this.shadowRoot.querySelector('#vibrant_image');
+        vibrantImage.addEventListener("load", () => {
+          var vibrant = new Vibrant(vibrantImage, 8, 5);
+          var swatches = vibrant.swatches();
+          //Stop execution if there's no vibrant color
+          if (!swatches["Vibrant"]) {
+            return;
+          }
+          this.set('work.mainColor', swatches["Vibrant"].getHex());
+
+          //Change background color
+          this.updateStyles({
+            '--progress-color': this.work.mainColor
+          });
         });
       }
 
       _clearColor(){
-        this.work.mainColor = "#333";
+        let defaultColor = this.data.mainColor || '#333';
+        this.set('work.mainColor', defaultColor);
         this.updateStyles({
-          '--progress-color': this.work.mainColor
+          '--progress-color': defaultColor
         });
       }
 
@@ -596,6 +612,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       _handleCoverImage(e){
         let fileInfo = e.detail.value;
         this.set('work.coverImage', fileInfo.downloadUrl);
+        this._getMainColor();
       }
       _handleCoverDeletion(){
         this.set('work.coverImage', '');
