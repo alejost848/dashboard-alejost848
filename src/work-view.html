@@ -528,7 +528,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         if (!swatches["Vibrant"]) {
           return;
         }
-        this.work.mainColor = "#" + swatches["Vibrant"].getHex().substring(1);
+        this.work.mainColor = swatches["Vibrant"].getHex();
 
         //Change background color
         this.updateStyles({
