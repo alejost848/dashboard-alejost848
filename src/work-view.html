@@ -207,6 +207,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       #save_button{
         padding: 6px 12px;
       }
+      #save_button[disabled]{
+        background-color: #ccc;
+        color: #a8a8a8;
+      }
       #save_button iron-icon{
         margin-right: 6px;
       }
@@ -270,7 +274,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <div id="button_actions" class="layout horizontal center">
       <span class="flex"></span>
       <paper-swatch-picker color="{{work.mainColor}}" horizontal-align="right" noink on-color-changed="_colorPickerChanged"></paper-swatch-picker>
-      <paper-button id="save_button" raised class="raised_button" on-tap="upload">
+      <paper-button id="save_button" raised class="raised_button" disabled="[[!workSlug]]" on-tap="upload">
         <template is="dom-if" if="[[!routeData.slug]]">
           <iron-icon icon="alejost-icons:file-upload"></iron-icon>
           Publish
@@ -498,7 +502,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this.updateStyles({
             '--progress-color': this.work.mainColor
           });
-          
+
           this._updateMetadata();
         } else {
           this._initializeObjects();
@@ -506,6 +510,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       _initializeObjects(){
+        this.workSlug = null;
         this.set('work', {});
         this.set('work.categories', []);
         this.set('work.button', {});
