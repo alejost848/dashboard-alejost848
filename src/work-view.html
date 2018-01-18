@@ -486,14 +486,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this.workSlug = this.routeData.slug;
           this._updateMetadata();
         } else {
-          this.set('work.categories', []);
-          this.set('work.button', {});
-          this.set('work.clients', []);
-          this.set('work.toolsUsed', []);
-          this.set('work.credits', []);
-          this.set('work.images', []);
-          this.set('work.videos', []);
+          this._initializeObjects();
         }
+      }
+
+      _initializeObjects(){
+        this.set('work', {});
+        this.set('work.categories', []);
+        this.set('work.button', {});
+        this.set('work.clients', []);
+        this.set('work.toolsUsed', []);
+        this.set('work.credits', []);
+        this.set('work.images', []);
+        this.set('work.videos', []);
       }
 
       stopPlayback() {
@@ -505,6 +510,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       _activeChanged(active) {
         if (!active) {
           this.stopPlayback();
+
+          this._initializeObjects();
+          this.workSlug = null;
+          this.set('routeData.slug', null);
 
           //Change background color for the work-view
           this.updateStyles({
