@@ -552,10 +552,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _computeVibrantSource(videoId, coverImage){
         if (videoId) {
-          return `https://cors-anywhere.herokuapp.com/https://i.ytimg.com/vi/${this.work.videoId}/mqdefault.jpg`;
+          return `https://cors.now.sh/https://i.ytimg.com/vi/${this.work.videoId}/mqdefault.jpg`;
         }
         if (coverImage) {
-          return `https://cors-anywhere.herokuapp.com/${this.work.coverImage}`;
+          return `https://cors.now.sh/${this.work.coverImage.downloadUrl}`;
         }
       }
 
