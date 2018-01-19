@@ -643,6 +643,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
       _handleImages(e){
         let fileInfo = e.detail.value;
+        if (!this.work.images) {
+          this.set('work.images', []);
+        }
         this.push('work.images', fileInfo);
       }
       _handleImagesDeletion(e){
