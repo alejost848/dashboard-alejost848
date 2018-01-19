@@ -119,6 +119,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           color: #666;
         }
       }
+      #remove_cover_button{
+        padding: 6px 12px;
+        background-color: rgba(130, 130, 130, 0.5);
+        color: white;
+        @apply --paper-font-button;
+      }
       #information{
         @apply --layout-horizontal;
         margin-bottom: 24px;
@@ -300,26 +306,37 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           </google-youtube>
         </template>
 
-        <template is="dom-if" if="[[work.coverImage]]" restamp="true">
-          <iron-image id="cover_image" src="[[work.coverImage]]" preload fade sizing="cover"></iron-image>
+        <firebase-storage-ref
+          id="cover_ref"
+          app-name="alejost848"
+          path="[[work.coverImage.path]]">
+        </firebase-storage-ref>
+
+        <template is="dom-if" if="[[work.coverImage.downloadUrl]]" restamp="true">
+          <iron-image id="cover_image" src="[[work.coverImage.downloadUrl]]" preload fade sizing="cover"></iron-image>
         </template>
 
         <div id="cover" class="layout horizontal center">
           <div class="cover_group layout vertical center flex">
 
-            <alejost-upload
-              button-text="Select cover..."
-              path="/works/[[workSlug]]"
-              accept-uploads="[[_computeAcceptUploads(workSlug, work.videoId)]]"
-              on-upload-completed="_handleCoverImage"
-              on-file-removed="_handleCoverDeletion">
-            </alejost-upload>
+            <template is="dom-if" if="[[!work.coverImage.downloadUrl]]">
+              <alejost-upload
+                button-text="Select cover..."
+                path="/works/[[workSlug]]"
+                accept-uploads="[[_computeAcceptUploads(workSlug, work.videoId, work.coverImage.downloadUrl)]]"
+                on-upload-completed="_handleCoverImage"
+                on-file-removed="_handleCoverDeletion">
+              </alejost-upload>
+            </template>
 
-            <!-- <paper-input label="Cover image" value="{{work.coverImage}}" disabled="[[_isEmptyString(work.videoId)]]"></paper-input> -->
+            <template is="dom-if" if="[[work.coverImage.downloadUrl]]">
+              <paper-button id="remove_cover_button" on-tap="deleteCover">Remove cover</paper-button>
+            </template>
+
           </div>
           <div class="cover_group layout vertical center flex">
             <iron-icon icon="alejost-icons:youtube"></iron-icon>
-            <paper-input label="Video ID" value="{{work.videoId}}" disabled="[[_isEmptyString(work.coverImage)]]">
+            <paper-input label="Video ID" value="{{work.videoId}}" disabled="[[_isEmptyString(work.coverImage.downloadUrl)]]" on-value-changed="_getMainColor">
               <div slot="prefix">youtu.be/</div>
             </paper-input>
           </div>
@@ -328,7 +345,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       </div>
 
       <!-- Vibrant image -->
-      <img id="vibrant_image" src="[[_computeVibrantSource(work.videoId, work.coverImage)]]" crossorigin="Anonymous" hidden>
+      <img id="vibrant_image" src="[[_computeVibrantSource(work.videoId, work.coverImage.downloadUrl)]]" crossorigin="Anonymous" hidden>
 
       <div id="card_content">
 
@@ -514,6 +531,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this.set('work', {});
         this.set('work.categories', []);
         this.set('work.button', {});
+        this.set('work.coverImage', {});
         this.set('work.clients', []);
         this.set('work.toolsUsed', []);
         this.set('work.credits', []);
@@ -616,11 +634,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _handleCoverImage(e){
         let fileInfo = e.detail.value;
-        this.set('work.coverImage', fileInfo.downloadUrl);
+        this.set('work.coverImage', fileInfo);
         this._getMainColor();
       }
       _handleCoverDeletion(){
-        this.set('work.coverImage', '');
+        this.set('work.coverImage', {});
         this._clearColor();
       }
       _handleImages(e){
@@ -665,8 +683,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           return string;
         }
       }
-      _computeAcceptUploads(workSlug, videoId){
-        if (workSlug && !videoId) {
+      _computeAcceptUploads(workSlug, videoId, coverImage){
+        if (workSlug && !videoId && !coverImage) {
           return true;
         } else {
           return false;
@@ -688,6 +706,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             delete this.work.categories[key];
           }
         }
+      }
+
+      deleteCover(){
+        let fileRef = this.shadowRoot.querySelector("#cover_ref");
+        fileRef.delete()
+          .then(() => {
+            this._handleCoverDeletion();
+            console.log("Cover deleted successfully");
+          }).catch(function(error) {
+            console.log("Uh-oh, an error occurred!", error);
+          });
+
       }
 
       deleteFile(e) {
