@@ -139,27 +139,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 </div>
               </div>
 
-              <span class="flex"></span>
-
-              <div class="file_actions layout horizontal center">
-                <template is="dom-if" if="{{isEqual(item.state, 'success')}}">
-                  <firebase-storage-ref
-                    app-name="alejost848"
-                    path="{{item.path}}"
-                    storage-uri="{{gsUri}}"
-                    index="[[index]]"
-                    id="ref-[[index]]"
-                    metadata="{{item.refMetadata}}"
-                    download-url="{{item.refDownloadUrl}}"
-                    on-download-url-changed="_handleFileInfo">
-                  </firebase-storage-ref>
-
-                  <template is="dom-if" if="[[!multiple]]">
-                    <paper-icon-button icon="alejost-icons:delete" value="[[index]]" on-tap="deleteFile"></paper-icon-button>
-                  </template>
-                </template>
-              </div>
-
+              <template is="dom-if" if="{{isEqual(item.state, 'success')}}">
+                <firebase-storage-ref
+                  app-name="alejost848"
+                  path="{{item.path}}"
+                  storage-uri="{{gsUri}}"
+                  index="[[index]]"
+                  id="ref-[[index]]"
+                  metadata="{{item.refMetadata}}"
+                  download-url="{{item.refDownloadUrl}}"
+                  on-download-url-changed="_handleFileInfo">
+                </firebase-storage-ref>
+              </template>
             </div>
 
             <template is="dom-if" if="[[!isEqual(item.state, 'success')]]">
@@ -204,14 +195,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       ready(){
         super.ready();
-        this.filesInfo = [];
       }
 
       onFileUpload(e){
-        if (!this.multiple) {
-          this.$.firebase_storage.clearTasks();
-          this.acceptUploads = false;
-        }
         this.imageFiles = [];
         this.imageFiles = e.target.files;
         this.filesPending = e.target.files.length;
@@ -240,14 +226,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         e.preventDefault();
 
         if (this.acceptUploads) {
-          if (!this.multiple) {
-            this.$.firebase_storage.clearTasks();
-            this.acceptUploads = false;
-          }
-
           this.imageFiles = [];
           this.imageFiles = e.dataTransfer.files;
-          this.filesPending = e.target.files.length;
+          this.filesPending = e.dataTransfer.files.length;
         }
 
         this.$.dragArea.style.backgroundColor = "transparent";
@@ -267,28 +248,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         return a === b;
       }
 
-      deleteFile(e) {
-        let fileRef = this.shadowRoot.querySelector('#ref-' + e.target.value);
-        let filePath = fileRef.path;
-        fileRef.delete()
-          .then(() => {
-
-            //Clear the list of images and accept uploads again for single file uploads
-            this.imageFiles = [];
-            this.$.firebase_storage.clearTasks();
-            this.acceptUploads = true;
-
-            this.dispatchEvent(new CustomEvent('file-removed', { detail: {value: filePath}, bubbles: true, composed: true }));
-            console.log("File deleted successfully");
-          }).catch(function(error) {
-            console.log("Uh-oh, an error occurred!", error);
-          });
-      }
-
       _handleFileInfo(e){
-        if (!e.detail.value) {
-          return;
-        }
         let fileRef = e.target;
 
         let imageInfo = {
@@ -299,11 +259,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this.dispatchEvent(new CustomEvent('upload-completed', { detail: {value: imageInfo}, bubbles: true, composed: true }));
 
         if (this.filesPending == 0) {
-          if (this.multiple) {
-            this.$.firebase_storage.clearTasks();
-          } else {
-            this.filesInfo = [];
-          }
+          this.imageFiles = [];
+          this.$.firebase_storage.clearTasks();
         }
       }
     }
