@@ -188,7 +188,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       status-known="{{statusKnown}}">
     </firebase-auth>
 
-    <app-drawer-layout id="drawer_layout" fullbleed responsive-width="960px" narrow="{{narrow}}" force-narrow="[[!signedIn]]" on-narrow-changed="_narrowChanged">
+    <app-drawer-layout id="drawer_layout" fullbleed responsive-width="960px" narrow="{{narrow}}" force-narrow="[[!_isUserAllowed(signedIn, user.isAnonymous)]]" on-narrow-changed="_narrowChanged">
       <!-- Drawer content -->
       <app-drawer id="drawer" slot="drawer" swipe-open="[[narrow]]" disable-swipe="[[!signedIn]]" transition-duration="[[_drawerTransitionDuration]]">
         <div id="drawer_wrapper" class="layout vertical">
@@ -264,7 +264,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       <!-- Main content -->
       <app-header-layout fullbleed>
-        <template is="dom-if" if="[[signedIn]]">
+        <template is="dom-if" if="[[_isUserAllowed(signedIn, user.isAnonymous)]]">
           <app-header slot="header" hidden="[[!narrow]]">
             <app-toolbar>
               <paper-icon-button icon="alejost-icons:menu" drawer-toggle></paper-icon-button>
@@ -349,16 +349,25 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       _userStatusChanged(statusKnown, signedIn){
         // HACK: Wait until the status of the user is known
         // If the user isn't logged in redirect it to login page
-        if (statusKnown && !signedIn) {
-          this.set('route.path', '/');
-          this.page = 'login';
+        if (statusKnown) {
+          if (!signedIn || this.user.isAnonymous) {
+            this.set('route.path', '/');
+            this.page = 'login';
+            this.logout();
+          }
+        }
+      }
+      _isUserAllowed(signedIn, isAnonymous){
+        if (!signedIn || isAnonymous) {
+          return false;
+        } else {
+          return true;
         }
       }
 
       login(e){
         this.$.auth.signInWithEmailAndPassword(e.detail.email, e.detail.password).then(() => {
-          this.page = 'overview';
-          this.$.login_view.resetInputs();
+          window.location.reload();
         }).catch(error => {
           if (error.code == "auth/user-not-found") {
             this._openToast({detail: {text: "The user doesn't exist", duration: 3000}});

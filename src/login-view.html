@@ -122,11 +122,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this.dispatchEvent(new CustomEvent('reset-submit', { detail: {email: this.$.reset_email_input.value}, bubbles: true, composed: true }));
       }
 
-      resetInputs(){
-        this.$.email_input.value = "";
-        this.$.password_input.value = "";
-      }
-
       _showLoginPage(){
         this.loginPage = "login";
       }
