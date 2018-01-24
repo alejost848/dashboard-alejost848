@@ -309,7 +309,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <template is="dom-if" if="[[!work.coverImage.downloadUrl]]">
               <alejost-upload
                 button-text="Select cover..."
-                path="/works/[[workSlug]]"
+                path="/works/[[workSlug]]/cover"
                 accept-uploads="[[_computeAcceptUploads(workSlug, work.videoId, work.coverImage.downloadUrl)]]"
                 on-upload-completed="_handleCoverImage"
                 on-file-removed="_handleCoverDeletion">
