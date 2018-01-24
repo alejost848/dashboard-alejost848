@@ -731,7 +731,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       upload(){
         let slug = this.workSlug;
         this.$.firebase_document.path = `/works/${slug}`;
-        this.$.firebase_document.ref.set(this.work).then(() => {
+        this.$.firebase_document.ref.update(this.work).then(() => {
           //Redirect to /works
           window.location.replace("/works");
         });
