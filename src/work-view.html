@@ -740,9 +740,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         } else {
           //Use update for existing works
           this.$.firebase_document.ref.update(this.work).then(() => {
-            window.location.replace("/works");
+            this.openToast(`Changes saved for ${this.work.title}`, 3000);
           });
         }
+      }
+
+      openToast(text, duration){
+        this.dispatchEvent(new CustomEvent('show-toast', { detail: {text: text, duration: duration}, bubbles: true, composed: true }));
       }
 
       replace(string, options) {
