@@ -500,7 +500,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         //When the data from Firebase is retrieved check if its empty or not
         //If there is data, set the work property and the slug with the current title
         if (!this._isEmptyObject(data)) {
-          this.work = data;
+          Object.assign(this.work, data);
           this.workSlug = this.routeData.slug;
 
           this.updateStyles({
