@@ -114,7 +114,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         if (Object.keys(work).length !== 0 && work.constructor === Object) {
           this.data = {
             type: "work",
-            image: work.coverImage && work.coverImage.downloadUrl || work.thumbnail,
+            image: work.coverImage && work.coverImage.downloadUrl || `https://i.ytimg.com/vi/${work.videoId}/maxresdefault.jpg`,
             title: work.title,
             slug: this.itemSlug
           };
