@@ -283,7 +283,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <youtube-analytics-view name="youtube-analytics"></youtube-analytics-view>
             <releases-view name="releases"></releases-view>
 
-            <work-view name="work" route="[[subroute]]" toast-open="[[toastOpen]]" on-show-toast="_openToast"></work-view>
+            <work-view name="work" route="[[subroute]]" toast-open="[[toastOpen]]"></work-view>
 
             <error-view name="error"></error-view>
           </iron-pages>
@@ -291,7 +291,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       </app-header-layout>
     </app-drawer-layout>
 
-    <paper-toast id="toast" text="[[toastText]]" duration="[[toastDuration]]" on-opened-changed="_toastOpened" horizontal-align="center"></paper-toast>
+    <paper-toast id="toast" text="[[toastText]]" duration="[[toastDuration]]" on-opened-changed="_toastOpened"></paper-toast>
 
   </template>
 
