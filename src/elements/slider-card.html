@@ -79,20 +79,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       data="{{data}}">
     </firebase-document>
 
-    <firebase-query
+    <firebase-document
       app-name="alejost848"
-      path="/works"
-      order-by-child="title"
-      equal-to="{{itemTitle}}"
-      on-data-changed="getWorkInfo">
-    </firebase-query>
+      path="/works/[[itemSlug]]"
+      data="{{work}}">
+    </firebase-document>
 
     <iron-image src="[[data.image]]" preload fade sizing="cover"></iron-image>
     <span class="flex"></span>
     <paper-dropdown-menu no-label-float horizontal-align="left">
-      <paper-listbox selected="{{itemTitle}}" attr-for-selected="name" slot="dropdown-content">
+      <paper-listbox selected="{{itemSlug}}" attr-for-selected="name" slot="dropdown-content">
         <template is="dom-repeat" items="[[dropdownList]]">
-          <paper-item name="[[item.title]]">[[item.title]]</paper-item>
+          <paper-item name="[[item.$key]]">[[item.title]]</paper-item>
         </template>
       </paper-listbox>
     </paper-dropdown-menu>
@@ -104,17 +102,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       static get properties() {
         return {
-          data: Object
+          data: Object,
+          work: {
+            type: Object,
+            observer: "_workChanged"
+          }
         };
       }
 
-      getWorkInfo(e){
-        let data = e.detail.value;
-        if (data.length > 0) {
+      _workChanged(work){
+        if (Object.keys(work).length !== 0 && work.constructor === Object) {
           this.data = {
-            image: data[0].thumbnail,
-            title: data[0].title,
-            slug: data[0].slug
+            type: "work",
+            image: work.coverImage && work.coverImage.downloadUrl || work.thumbnail,
+            title: work.title,
+            slug: this.itemSlug
           };
         }
       }

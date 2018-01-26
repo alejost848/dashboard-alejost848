@@ -65,7 +65,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <sortable-js class="layout horizontal wrap justified" on-sortable-sort="sortSlider">
       <template is="dom-if" if="[[dataReady]]" restamp="true">
         <template is="dom-repeat" items="[[sliderData]]" as="slide">
-          <slider-card item-title="[[slide.title]]" dropdown-list="[[works]]" index="[[index]]"></slider-card>
+          <slider-card item-slug="[[slide.slug]]" dropdown-list="[[works]]" index="[[index]]"></slider-card>
         </template>
       </template>
     </sortable-js>
