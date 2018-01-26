@@ -564,7 +564,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       }
 
-      _getMainColor(){
+      _getMainColor(e){
+        //Set videoId to null if the value is erased and left empty to avoid it being written to the database
+        if (e && e.detail.value == "") {
+          setTimeout(() => {
+            this.set('work.videoId', null);
+          }, 10);
+        }
         let vibrantImage = this.shadowRoot.querySelector('#vibrant_image');
         vibrantImage.addEventListener("load", () => {
           var vibrant = new Vibrant(vibrantImage, 8, 5);
