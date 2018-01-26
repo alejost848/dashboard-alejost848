@@ -494,13 +494,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       ready(){
         super.ready();
         this.states = states;
+
+        //Initialize work and subproperties to allow proper data binding
+        this._initializeObjects();
       }
 
       _dataChanged(data){
-        //When the data from Firebase is retrieved check if its empty or not
-        //If there is data, set the work property and the slug with the current title
+        //If data is not empty, use Object.assign to update this.work with properties stored in the database
+        //without removing the already created ones
         if (!this._isEmptyObject(data)) {
-          Object.assign(this.work, data);
+          let tempWork = Object.assign(this.work, data);
+          this.set("work", {});
+          this.set("work", tempWork);
+
           this.workSlug = this.routeData.slug;
 
           this.updateStyles({
@@ -508,8 +514,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           });
 
           this._updateMetadata();
-        } else {
-          this._initializeObjects();
         }
       }
 
@@ -537,7 +541,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this.stopPlayback();
 
           this._initializeObjects();
-          this.workSlug = null;
           this.set('routeData.slug', null);
 
           //Change background color for the work-view
