@@ -256,14 +256,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         <paper-chip-input-autocomplete
           id="categories_input"
+          name="categories"
           label="Add a category"
           no-label-float
-          items="{{_computeCategories(work.categories)}}"
+          items="{{_computeItems(work.categories)}}"
           additional-items
-          source="[[_computeCategoriesSuggestions(suggestions.categories)]]"
+          source="[[_computeSuggestions(suggestions.categories)]]"
           closable
-          on-chip-created="_categoryAdded"
-          on-chip-removed="_categoryRemoved">
+          on-chip-created="_chipAdded"
+          on-chip-removed="_chipRemoved">
         </paper-chip-input-autocomplete>
       </div>
     </div>
@@ -371,23 +372,29 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <div class="info_item">
               <div class="info_item_title">Client</div>
               <paper-chip-input-autocomplete
+                name="clients"
                 label="Add a client"
                 no-label-float
-                items="{{work.clients}}"
-                source="[[_toObjectArray(suggestions.clients)]]"
+                items="{{_computeItems(work.clients)}}"
+                source="[[_computeSuggestions(suggestions.clients)]]"
                 additional-items
-                closable>
+                closable
+                on-chip-created="_chipAdded"
+                on-chip-removed="_chipRemoved">
               </paper-chip-input-autocomplete>
             </div>
             <div class="info_item">
               <div class="info_item_title">Tools used</div>
               <paper-chip-input-autocomplete
+                name="toolsUsed"
                 label="Add a tool"
                 no-label-float
-                items="{{work.toolsUsed}}"
-                source="[[_toObjectArray(suggestions.tools)]]"
+                items="{{_computeItems(work.toolsUsed)}}"
+                source="[[_computeSuggestions(suggestions.toolsUsed)]]"
                 additional-items
-                closable>
+                closable
+                on-chip-created="_chipAdded"
+                on-chip-removed="_chipRemoved">
               </paper-chip-input-autocomplete>
             </div>
           </div>
@@ -395,12 +402,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <div class="info_item">
               <div class="info_item_title">Credits</div>
               <paper-chip-input-autocomplete
+                name="credits"
                 label="Add a person"
                 no-label-float
-                items="{{work.credits}}"
-                source="[[_toObjectArray(suggestions.credits)]]"
+                items="{{_computeItems(work.credits)}}"
+                source="[[_computeSuggestions(suggestions.credits)]]"
                 additional-items
-                closable>
+                closable
+                on-chip-created="_chipAdded"
+                on-chip-removed="_chipRemoved">
               </paper-chip-input-autocomplete>
             </div>
           </div>
@@ -525,9 +535,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this.set('work.categories', {});
         this.set('work.button', {});
         this.set('work.coverImage', {});
-        this.set('work.clients', []);
-        this.set('work.toolsUsed', []);
-        this.set('work.credits', []);
+        this.set('work.clients', {});
+        this.set('work.toolsUsed', {});
+        this.set('work.credits', {});
         this.set('work.images', []);
         this.set('work.videos', []);
       }
@@ -692,35 +702,30 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       }
 
-      _computeCategories(categories){
-        if (categories) {
-          return Object.values(categories);
+      _computeItems(items){
+        if (items) {
+          return Object.values(items);
         }
       }
-      _computeCategoriesSuggestions(categories){
-        if (categories != undefined && !this._isEmptyObject(categories)) {
-          return Object.keys(categories).map(function(key) {
-            return { text: categories[key], value: key };
+      _computeSuggestions(suggestions){
+        if (suggestions && !this._isEmptyObject(suggestions)) {
+          return Object.keys(suggestions).map(function(key) {
+            return { text: suggestions[key], value: key };
           });
         }
       }
 
-      _toObjectArray(array) {
-        if (array && array.length > 0) {
-          return array.map(function(item) {
-            return { text: item };
-          });
-        }
+      _chipAdded(e){
+        //Add to the corresponding object (categories, clients, credits, toolsUsed)
+        const name = e.target.getAttribute('name');
+        let key = this.replace(e.detail.chipLabel, {lower: true});
+        this.work[name][key] = e.detail.chipLabel;
       }
-
-      _categoryAdded(e){
-        let categorySlug = this.replace(e.detail.chipLabel, {lower: true});
-        this.work.categories[categorySlug] = e.detail.chipLabel;
-      }
-      _categoryRemoved(e){
-        for (var key in this.work.categories) {
-          if (this.work.categories[key] == e.detail.chipLabel) {
-            delete this.work.categories[key];
+      _chipRemoved(e){
+        const name = e.target.getAttribute('name');
+        for (var key in this.work[name]) {
+          if (this.work[name][key] == e.detail.chipLabel) {
+            delete this.work[name][key];
           }
         }
       }
@@ -734,7 +739,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           }).catch(function(error) {
             console.log("Uh-oh, an error occurred!", error);
           });
-
       }
 
       deleteFile(e) {
