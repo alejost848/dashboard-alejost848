@@ -328,7 +328,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           </div>
           <div class="cover_group layout vertical center flex">
             <iron-icon icon="alejost-icons:youtube"></iron-icon>
-            <paper-input label="Video ID" value="{{work.videoId}}" disabled="[[_isEmptyString(work.coverImage.downloadUrl)]]" on-value-changed="_getMainColor">
+            <paper-input label="Video ID" value="{{work.videoId}}" disabled="[[_isEmptyString(work.coverImage.downloadUrl)]]" on-value-changed="_videoIdChanged">
               <div slot="prefix">youtu.be/</div>
             </paper-input>
           </div>
@@ -579,13 +579,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       }
 
-      _getMainColor(e){
+      _videoIdChanged(e){
+        let videoId = e.detail.value;
         //Set videoId to null if the value is erased and left empty to avoid it being written to the database
-        if (e && e.detail.value == "") {
+        if (videoId == "") {
           setTimeout(() => {
             this.set('work.videoId', null);
+            this.set('work.thumbnail', null);
           }, 10);
+          return;
         }
+        this.set('work.thumbnail', `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`)
+        this._getMainColor();
+      }
+
+      _getMainColor(){
         let vibrantImage = this.shadowRoot.querySelector('#vibrant_image');
         vibrantImage.addEventListener("load", () => {
           var vibrant = new Vibrant(vibrantImage, 8, 5);
