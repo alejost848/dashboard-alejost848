@@ -655,6 +655,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
       _handleCoverDeletion(){
         this.set('work.coverImage', {});
+        this.set('work.thumbnail', null);
         this._clearColor();
       }
       _handleImages(e){
