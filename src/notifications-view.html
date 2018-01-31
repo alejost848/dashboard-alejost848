@@ -9,7 +9,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+
 <link rel="import" href="shared-styles.html">
+
+<script async src="../bower_components/moment/min/moment.min.js"></script>
 
 <dom-module id="notifications-view">
   <template>
@@ -17,14 +21,101 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       :host {
         display: block;
       }
+      .long_card{
+        width: 100%;
+        box-sizing: border-box;
+        padding: 10px;
+        margin: 8px 0;
+        border-radius: 4px;
+        background-color: var(--card-bg-color);
+        @apply --shadow-transition;
+        @apply --shadow-elevation-4dp;
+      }
+      .long_card:hover{
+        @apply --shadow-elevation-12dp;
+      }
+      iron-icon{
+        color: var(--card-date-color);
+        padding: 10px;
+        margin-right: 10px;
+        width: 32px;
+        height: 32px;
+      }
+      #card_title{
+        font-size: 17px;
+        line-height: 20px;
+        font-weight: 400;
+        margin-bottom: 4px;
+        color: var(--card-title-color);
+      }
+      #card_description{
+        font-size: 14px;
+        line-height: 18px;
+        font-weight: 400;
+        max-height: 54px;
+        overflow: hidden;
+        color: var(--card-description-color);
+      }
+      #card_date{
+        font-size: 12px;
+        color: var(--card-date-color);
+        margin-right: 12px;
+      }
     </style>
 
     <h1>Notifications</h1>
+
+    <firebase-query
+      app-name="alejost848"
+      path="/dashboard/notifications"
+      data="{{notifications}}">
+    </firebase-query>
+
+    <template is="dom-repeat" items="[[notifications]]" as="notification">
+      <a href="[[notification.click_action]]" target="_blank" rel="noopener" class="link">
+        <div class="long_card layout horizontal center">
+          <iron-icon icon="alejost-icons:logo"></iron-icon>
+          <div class="flex">
+            <div id="card_title">[[notification.title]]</div>
+            <div class="flex layout horizontal">
+              <div id="card_description">[[notification.body]]</div>
+              <span class="flex"></span>
+              <div id="card_date">[[_computeTimeAgo(notification.publishedDate)]]</div>
+            </div>
+          </div>
+        </div>
+      </a>
+    </template>
   </template>
 
   <script>
     class NotificationsView extends Polymer.Element {
       static get is() { return 'notifications-view'; }
+
+      static get properties() {
+        return {
+          notifications: {
+            type: Array,
+            observer: '_notificationsChanged'
+          }
+        };
+      }
+
+      _notificationsChanged(notifications){
+        if (notifications.length > 0) {
+          this.notifications = this.sortByKeyDescending(notifications, "publishedDate");
+        }
+      }
+      sortByKeyDescending(array, key) {
+        return array.sort(function(a, b) {
+          var x = a[key]; var y = b[key];
+          return ((x < y) ? -1 : ((x > y) ? 1 : 0))*-1;
+        });
+      }
+
+      _computeTimeAgo(publishedDate) {
+        return moment(publishedDate).fromNow();
+      }
     }
 
     window.customElements.define(NotificationsView.is, NotificationsView);
