@@ -316,8 +316,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 button-text="Select cover..."
                 path="/works/[[workSlug]]/cover"
                 accept-uploads="[[_computeAcceptUploads(workSlug, work.videoId, work.coverImage.downloadUrl)]]"
-                on-upload-completed="_handleCoverImage"
-                on-file-removed="_handleCoverDeletion">
+                on-upload-completed="_handleCoverImage">
               </alejost-upload>
             </template>
 
@@ -423,8 +422,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             multiple
             path="/works/[[workSlug]]"
             accept-uploads="[[workSlug]]"
-            on-upload-completed="_handleImages"
-            on-file-removed="_handleImagesDeletion">
+            on-upload-completed="_handleImages">
           </alejost-upload>
 
           <sortable-js class="layout horizontal wrap" on-sortable-sort="sortImages">
