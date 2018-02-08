@@ -12,6 +12,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../bower_components/iron-form/iron-form.html">
 
 <link rel="import" href="../bower_components/paper-progress/paper-progress.html">
 <link rel="import" href="../bower_components/paper-fab/paper-fab.html">
@@ -248,224 +249,228 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <paper-progress id="video_progress" value="{{videoCurrentTime}}" max="{{videoDuration}}"></paper-progress>
 
-    <div id="title_header" class="layout horizontal center">
-      <div>
+    <iron-form id="form">
+      <form>
+        <div id="title_header" class="layout horizontal center">
+          <div>
 
-        <paper-input id="title_input" label="Title" value="{{work.title}}" placeholder="Add a title" on-value-changed="_generateSlug"></paper-input>
-        <paper-input id="slug_input" label="Slug" value="[[workSlug]]" disabled></paper-input>
+            <paper-input id="title_input" label="Title" value="{{work.title}}" placeholder="Add a title" required on-value-changed="_generateSlug"></paper-input>
+            <paper-input id="slug_input" label="Slug" value="[[workSlug]]" required disabled></paper-input>
 
-        <paper-chip-input-autocomplete
-          id="categories_input"
-          name="categories"
-          label="Add a category"
-          no-label-float
-          items="{{_computeItems(work.categories)}}"
-          additional-items
-          source="[[_computeSuggestions(suggestions.categories)]]"
-          closable
-          on-chip-created="_chipAdded"
-          on-chip-removed="_chipRemoved">
-        </paper-chip-input-autocomplete>
-      </div>
-    </div>
-
-    <div id="button_actions" class="layout horizontal center">
-      <span class="flex"></span>
-      <paper-swatch-picker color="{{work.mainColor}}" horizontal-align="right" noink on-color-changed="_colorPickerChanged"></paper-swatch-picker>
-      <paper-button id="save_button" raised class="raised_button" disabled="[[!workSlug]]" on-tap="upload">
-        <template is="dom-if" if="[[!routeData.slug]]">
-          <iron-icon icon="alejost-icons:file-upload"></iron-icon>
-          Publish
-        </template>
-        <template is="dom-if" if="[[routeData.slug]]">
-          <iron-icon icon="alejost-icons:save"></iron-icon>
-          Save changes
-        </template>
-      </paper-button>
-    </div>
-
-    <div id="card">
-
-      <div id="cover_container">
-
-        <template is="dom-if" if="[[work.videoId]]" restamp="true">
-          <google-youtube
-            id="video"
-            fluid
-            video-id="[[work.videoId]]"
-            showinfo="0"
-            rel="0">
-          </google-youtube>
-        </template>
-
-        <firebase-storage-ref
-          id="cover_ref"
-          app-name="alejost848"
-          path="[[work.coverImage.path]]">
-        </firebase-storage-ref>
-
-        <template is="dom-if" if="[[work.coverImage.downloadUrl]]" restamp="true">
-          <iron-image id="cover_image" src="[[work.coverImage.downloadUrl]]" preload fade sizing="cover"></iron-image>
-        </template>
-
-        <div id="cover" class="layout horizontal center">
-          <div class="cover_group layout vertical center flex">
-
-            <template is="dom-if" if="[[!work.coverImage.downloadUrl]]">
-              <alejost-upload
-                button-text="Select cover..."
-                path="/works/[[workSlug]]/cover"
-                accept-uploads="[[_computeAcceptUploads(workSlug, work.videoId, work.coverImage.downloadUrl)]]"
-                on-upload-completed="_handleCoverImage">
-              </alejost-upload>
-            </template>
-
-            <template is="dom-if" if="[[work.coverImage.downloadUrl]]">
-              <paper-button id="remove_cover_button" on-tap="deleteCover">Remove cover</paper-button>
-            </template>
-
-          </div>
-          <div class="cover_group layout vertical center flex">
-            <iron-icon icon="alejost-icons:youtube"></iron-icon>
-            <paper-input label="Video ID" value="{{work.videoId}}" disabled="[[_isEmptyString(work.coverImage.downloadUrl)]]" on-value-changed="_videoIdChanged">
-              <div slot="prefix">youtu.be/</div>
-            </paper-input>
+            <paper-chip-input-autocomplete
+              id="categories_input"
+              name="categories"
+              label="Add a category"
+              no-label-float
+              items="{{_computeItems(work.categories)}}"
+              additional-items
+              source="[[_computeSuggestions(suggestions.categories)]]"
+              closable
+              on-chip-created="_chipAdded"
+              on-chip-removed="_chipRemoved">
+            </paper-chip-input-autocomplete>
           </div>
         </div>
 
-      </div>
-
-      <!-- Vibrant image -->
-      <img id="vibrant_image" src="[[_computeVibrantSource(work.videoId, work.coverImage.downloadUrl)]]" crossorigin="Anonymous" hidden>
-
-      <div id="card_content">
-
-        <paper-fab icon="alejost-icons:share"></paper-fab>
-
-        <div id="information">
-          <div class="info_group info_item flex-4 layout vertical start">
-
-            <div class="info_group">
-              <div class="info_item">
-                <div class="info_item_title">Published date</div>
-                <paper-input id="date_input" no-label-float value="{{work.publishedDate}}" placeholder="YYYY-MM-DD">
-                  <paper-icon-button slot="suffix" icon="alejost-icons:event" on-tap="_openDatePicker"></paper-icon-button>
-                </paper-input>
-              </div>
-              <div class="info_item">
-                <div class="info_item_title">Description</div>
-                <paper-textarea id="description" no-label-float value="{{work.shortDescription}}" placeholder="Add a description"></paper-textarea>
-              </div>
-            </div>
-            <span class="flex"></span>
-
-            <div class="info_group">
-              <div class="info_item">
-                <div class="info_item_title">Action button</div>
-                <paper-input label="Text" value="{{work.button.text}}"></paper-input>
-                <paper-input label="URL" value="{{work.button.url}}"></paper-input>
-              </div>
-            </div>
-          </div>
-          <div class="info_group flex-3">
-            <div class="info_item">
-              <div class="info_item_title">Client</div>
-              <paper-chip-input-autocomplete
-                name="clients"
-                label="Add a client"
-                no-label-float
-                items="{{_computeItems(work.clients)}}"
-                source="[[_computeSuggestions(suggestions.clients)]]"
-                additional-items
-                closable
-                on-chip-created="_chipAdded"
-                on-chip-removed="_chipRemoved">
-              </paper-chip-input-autocomplete>
-            </div>
-            <div class="info_item">
-              <div class="info_item_title">Tools used</div>
-              <paper-chip-input-autocomplete
-                name="toolsUsed"
-                label="Add a tool"
-                no-label-float
-                items="{{_computeItems(work.toolsUsed)}}"
-                source="[[_computeSuggestions(suggestions.toolsUsed)]]"
-                additional-items
-                closable
-                on-chip-created="_chipAdded"
-                on-chip-removed="_chipRemoved">
-              </paper-chip-input-autocomplete>
-            </div>
-          </div>
-          <div class="info_group flex-3">
-            <div class="info_item">
-              <div class="info_item_title">Credits</div>
-              <paper-chip-input-autocomplete
-                name="credits"
-                label="Add a person"
-                no-label-float
-                items="{{_computeItems(work.credits)}}"
-                source="[[_computeSuggestions(suggestions.credits)]]"
-                additional-items
-                closable
-                on-chip-created="_chipAdded"
-                on-chip-removed="_chipRemoved">
-              </paper-chip-input-autocomplete>
-            </div>
-          </div>
-        </div>
-
-        <div class="multimedia_group">
-          <div class="multimedia_title info_item_title">Images</div>
-
-          <alejost-upload
-            multiple
-            path="/works/[[workSlug]]"
-            accept-uploads="[[workSlug]]"
-            on-upload-completed="_handleImages">
-          </alejost-upload>
-
-          <sortable-js class="layout horizontal wrap" on-sortable-sort="sortImages">
-            <template is="dom-repeat" items="[[work.images]]" as="image">
-              <div class="image_container">
-                <iron-image class="image" data="[[image]]" src="[[image.downloadUrl]]" preload fade sizing="cover"></iron-image>
-                <firebase-storage-ref
-                  id="ref-[[index]]"
-                  app-name="alejost848"
-                  path="{{image.path}}">
-                </firebase-storage-ref>
-                <div class="overlay">
-                  <paper-icon-button class="delete_image_button" icon="alejost-icons:close" value="[[index]]" on-tap="deleteFile"></paper-icon-button>
-                </div>
-              </div>
+        <div id="button_actions" class="layout horizontal center">
+          <span class="flex"></span>
+          <paper-swatch-picker color="{{work.mainColor}}" horizontal-align="right" noink on-color-changed="_colorPickerChanged"></paper-swatch-picker>
+          <paper-button id="save_button" raised class="raised_button" disabled="[[!workSlug]]" on-tap="upload">
+            <template is="dom-if" if="[[!routeData.slug]]">
+              <iron-icon icon="alejost-icons:file-upload"></iron-icon>
+              Publish
             </template>
-          </sortable-js>
+            <template is="dom-if" if="[[routeData.slug]]">
+              <iron-icon icon="alejost-icons:save"></iron-icon>
+              Save changes
+            </template>
+          </paper-button>
         </div>
 
-        <div class="multimedia_group">
-          <div class="multimedia_title info_item_title">Videos</div>
-          <paper-chip-input-autocomplete
-            label="Add a video ID"
-            no-label-float
-            items="{{work.videos}}"
-            additional-items
-            closable>
-          </paper-chip-input-autocomplete>
-          <div class="layout horizontal wrap justified">
-            <template is="dom-repeat" items="[[work.videos]]" as="video">
+        <div id="card">
+
+          <div id="cover_container">
+
+            <template is="dom-if" if="[[work.videoId]]" restamp="true">
               <google-youtube
-                class="video_item"
+                id="video"
                 fluid
-                video-id="[[video]]"
+                video-id="[[work.videoId]]"
                 showinfo="0"
                 rel="0">
               </google-youtube>
             </template>
+
+            <firebase-storage-ref
+              id="cover_ref"
+              app-name="alejost848"
+              path="[[work.coverImage.path]]">
+            </firebase-storage-ref>
+
+            <template is="dom-if" if="[[work.coverImage.downloadUrl]]" restamp="true">
+              <iron-image id="cover_image" src="[[work.coverImage.downloadUrl]]" preload fade sizing="cover"></iron-image>
+            </template>
+
+            <div id="cover" class="layout horizontal center">
+              <div class="cover_group layout vertical center flex">
+
+                <template is="dom-if" if="[[!work.coverImage.downloadUrl]]">
+                  <alejost-upload
+                    button-text="Select cover..."
+                    path="/works/[[workSlug]]/cover"
+                    accept-uploads="[[_computeAcceptUploads(workSlug, work.videoId, work.coverImage.downloadUrl)]]"
+                    on-upload-completed="_handleCoverImage">
+                  </alejost-upload>
+                </template>
+
+                <template is="dom-if" if="[[work.coverImage.downloadUrl]]">
+                  <paper-button id="remove_cover_button" on-tap="deleteCover">Remove cover</paper-button>
+                </template>
+
+              </div>
+              <div class="cover_group layout vertical center flex">
+                <iron-icon icon="alejost-icons:youtube"></iron-icon>
+                <paper-input label="Video ID" value="{{work.videoId}}" disabled="[[_isEmptyString(work.coverImage.downloadUrl)]]" on-value-changed="_videoIdChanged">
+                  <div slot="prefix">youtu.be/</div>
+                </paper-input>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Vibrant image -->
+          <img id="vibrant_image" src="[[_computeVibrantSource(work.videoId, work.coverImage.downloadUrl)]]" crossorigin="Anonymous" hidden>
+
+          <div id="card_content">
+
+            <paper-fab icon="alejost-icons:share"></paper-fab>
+
+            <div id="information">
+              <div class="info_group info_item flex-4 layout vertical start">
+
+                <div class="info_group">
+                  <div class="info_item">
+                    <div class="info_item_title">Published date</div>
+                    <paper-input id="date_input" no-label-float value="{{work.publishedDate}}" required placeholder="YYYY-MM-DD">
+                      <paper-icon-button slot="suffix" icon="alejost-icons:event" on-tap="_openDatePicker"></paper-icon-button>
+                    </paper-input>
+                  </div>
+                  <div class="info_item">
+                    <div class="info_item_title">Description</div>
+                    <paper-textarea id="description" no-label-float value="{{work.shortDescription}}" required placeholder="Add a description"></paper-textarea>
+                  </div>
+                </div>
+                <span class="flex"></span>
+
+                <div class="info_group">
+                  <div class="info_item">
+                    <div class="info_item_title">Action button</div>
+                    <paper-input label="Text" value="{{work.button.text}}"></paper-input>
+                    <paper-input label="URL" value="{{work.button.url}}"></paper-input>
+                  </div>
+                </div>
+              </div>
+              <div class="info_group flex-3">
+                <div class="info_item">
+                  <div class="info_item_title">Client</div>
+                  <paper-chip-input-autocomplete
+                    name="clients"
+                    label="Add a client"
+                    no-label-float
+                    items="{{_computeItems(work.clients)}}"
+                    source="[[_computeSuggestions(suggestions.clients)]]"
+                    additional-items
+                    closable
+                    on-chip-created="_chipAdded"
+                    on-chip-removed="_chipRemoved">
+                  </paper-chip-input-autocomplete>
+                </div>
+                <div class="info_item">
+                  <div class="info_item_title">Tools used</div>
+                  <paper-chip-input-autocomplete
+                    name="toolsUsed"
+                    label="Add a tool"
+                    no-label-float
+                    items="{{_computeItems(work.toolsUsed)}}"
+                    source="[[_computeSuggestions(suggestions.toolsUsed)]]"
+                    additional-items
+                    closable
+                    on-chip-created="_chipAdded"
+                    on-chip-removed="_chipRemoved">
+                  </paper-chip-input-autocomplete>
+                </div>
+              </div>
+              <div class="info_group flex-3">
+                <div class="info_item">
+                  <div class="info_item_title">Credits</div>
+                  <paper-chip-input-autocomplete
+                    name="credits"
+                    label="Add a person"
+                    no-label-float
+                    items="{{_computeItems(work.credits)}}"
+                    source="[[_computeSuggestions(suggestions.credits)]]"
+                    additional-items
+                    closable
+                    on-chip-created="_chipAdded"
+                    on-chip-removed="_chipRemoved">
+                  </paper-chip-input-autocomplete>
+                </div>
+              </div>
+            </div>
+
+            <div class="multimedia_group">
+              <div class="multimedia_title info_item_title">Images</div>
+
+              <alejost-upload
+                multiple
+                path="/works/[[workSlug]]"
+                accept-uploads="[[workSlug]]"
+                on-upload-completed="_handleImages">
+              </alejost-upload>
+
+              <sortable-js class="layout horizontal wrap" on-sortable-sort="sortImages">
+                <template is="dom-repeat" items="[[work.images]]" as="image">
+                  <div class="image_container">
+                    <iron-image class="image" data="[[image]]" src="[[image.downloadUrl]]" preload fade sizing="cover"></iron-image>
+                    <firebase-storage-ref
+                      id="ref-[[index]]"
+                      app-name="alejost848"
+                      path="{{image.path}}">
+                    </firebase-storage-ref>
+                    <div class="overlay">
+                      <paper-icon-button class="delete_image_button" icon="alejost-icons:close" value="[[index]]" on-tap="deleteFile"></paper-icon-button>
+                    </div>
+                  </div>
+                </template>
+              </sortable-js>
+            </div>
+
+            <div class="multimedia_group">
+              <div class="multimedia_title info_item_title">Videos</div>
+              <paper-chip-input-autocomplete
+                label="Add a video ID"
+                no-label-float
+                items="{{work.videos}}"
+                additional-items
+                closable>
+              </paper-chip-input-autocomplete>
+              <div class="layout horizontal wrap justified">
+                <template is="dom-repeat" items="[[work.videos]]" as="video">
+                  <google-youtube
+                    class="video_item"
+                    fluid
+                    video-id="[[video]]"
+                    showinfo="0"
+                    rel="0">
+                  </google-youtube>
+                </template>
+              </div>
+            </div>
+
           </div>
         </div>
-
-      </div>
-    </div>
+      </form>
+    </iron-form>
 
     <paper-dialog id="datepicker_dialog" class="paper-date-picker-dialog" scroll-action="lock" on-iron-overlay-closed="_closeDatePicker">
       <paper-date-picker id="picker" date="{{_selectedDate}}"></paper-date-picker>
@@ -767,6 +772,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       upload(){
+        if (!this.$.form.validate()) {
+          return;
+        }
+
         let slug = this.workSlug;
         this.$.firebase_document.path = `/works/${slug}`;
         this.$.firebase_document.ref.update(this.work).then(() => {
