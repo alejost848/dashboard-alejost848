@@ -29,6 +29,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/polymerfire/firebase-app.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 
+<link rel="import" href="../bower_components/sherby-metadata/sherby-metadata.html">
+
 <link rel="import" href="alejost-icons.html">
 <link rel="import" href="shared-styles.html">
 
@@ -158,6 +160,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         padding: 100px 20px;
       }
     </style>
+
+    <sherby-metadata data="[[metadata]]"></sherby-metadata>
 
     <app-location
         route="{{route}}"
@@ -322,6 +326,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       _routePageChanged(page) {
+        this._changeMetaTags(page);
+
         // If no page was found in the route data, page will be an empty string.
         // Default to 'overview' in that case.
         this.page = page || 'overview';
@@ -344,6 +350,54 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _showPage404() {
         this.page = 'error';
+      }
+
+      _changeMetaTags(page){
+        //Change meta tags
+        let title;
+        switch (page) {
+          case "":
+            title = "Dashboard - Alejandro Sanclemente";
+            break;
+          case "home":
+            title = "Home - Dashboard";
+            break;
+          case "works":
+            title = "Works - Dashboard";
+            break;
+          case "tutorials":
+            title = "Tutorials - Dashboard";
+            break;
+          case "work":
+            title = "New work - Dashboard";
+            break;
+          case "notifications":
+            title = "Notifications - Dashboard";
+            break;
+          case "analytics":
+            title = "Analytics - Dashboard";
+            break;
+          case "youtube-analytics":
+            title = "YouTube Analytics - Dashboard";
+            break;
+          case "releases":
+            title = "Releases - Dashboard";
+            break;
+          default:
+            title = "404 Not Found - Dashboard";
+        }
+
+        if(page != "tutorial"){
+          this.metadata = {
+            "title": title,
+            "og:title": title,
+            "description": "Interactive Media Designer based in Tuluá, Colombia. I specialize in motion design, UX design and development of Progressive Web Apps using Polymer and Firebase.",
+            "og:description": "Interactive Media Designer based in Tuluá, Colombia. I specialize in motion design, UX design and development of Progressive Web Apps using Polymer and Firebase.",
+            "og:type": "website",
+            "og:image": `${window.location.origin}/images/cover.png`,
+            "og:url": window.location.href
+          };
+        }
       }
 
       _userStatusChanged(statusKnown, signedIn){
