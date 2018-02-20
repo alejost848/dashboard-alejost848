@@ -204,7 +204,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       catchError(e) {
-        console.log(e.detail.message);
+        let errorCode = e.detail.code;
+        if (errorCode == "storage/unauthorized") {
+          this.imageFiles = [];
+          this.$.firebase_storage.clearTasks();
+          this.$.file_uploader.value = null;
+        }
       }
 
       _triggerFileSelection(){
@@ -261,6 +266,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         if (this.filesPending == 0) {
           this.imageFiles = [];
           this.$.firebase_storage.clearTasks();
+          this.$.file_uploader.value = null;
         }
       }
     }
