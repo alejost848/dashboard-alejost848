@@ -12,6 +12,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../bower_components/iron-form/iron-form.html">
 
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
@@ -64,6 +65,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       #back_arrow{
         color: white;
       }
+      iron-form, form{
+        height: 100%;
+      }
     </style>
 
     <div class="flex layout vertical center-center">
@@ -73,25 +77,33 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <div id="login_card" class="layout vertical">
         <iron-pages class="flex" selected="[[loginPage]]" attr-for-selected="name" fallback-selection="login">
           <section name="login" class="layout vertical">
-            <h1>Welcome</h1>
-            <paper-input id="email_input" label="Email" type="email" required error-message="Email can't be empty"></paper-input>
-            <paper-input id="password_input" label="Password" type="password" required error-message="Password can't be empty"></paper-input>
-            <span class="flex"></span>
-            <div class="layout horizontal center">
-              <paper-button id="forgot_password_button" noink on-tap="_showResetPage">Forgot password?</paper-button>
-              <span class="flex"></span>
-              <paper-button id="login_button" class="raised_button" raised on-tap="login">Login</paper-button>
-            </div>
+            <iron-form id="sign_in_form">
+              <form class="layout vertical" action="">
+                <h1>Welcome</h1>
+                <paper-input id="email_input" label="Email" name="email" type="email" autocomplete="email" required error-message="Email can't be empty"></paper-input>
+                <paper-input id="password_input" label="Password" name="password" type="password" required error-message="Password can't be empty"></paper-input>
+                <span class="flex"></span>
+                <div class="layout horizontal center">
+                  <paper-button id="forgot_password_button" noink on-tap="_showResetPage">Forgot password?</paper-button>
+                  <span class="flex"></span>
+                  <paper-button id="login_button" class="raised_button" raised on-tap="login">Login</paper-button>
+                </div>
+              </form>
+            </iron-form>
           </section>
           <section name="reset" class="layout vertical">
-            <h1>Reset password</h1>
-            <paper-input id="reset_email_input" label="Email" type="email" required error-message="Email can't be empty"></paper-input>
-            <span class="flex"></span>
-            <div class="layout horizontal end">
-              <paper-icon-button id="back_arrow" icon="alejost-icons:arrow-back" on-tap="_showLoginPage"></paper-icon-button>
-              <span class="flex"></span>
-              <paper-button id="login_button" raised on-tap="resetPassword">Reset</paper-button>
-            </div>
+            <iron-form id="reset_form">
+              <form class="layout vertical">
+                <h1>Reset password</h1>
+                <paper-input id="reset_email_input" label="Email" type="email" required error-message="Email can't be empty"></paper-input>
+                <span class="flex"></span>
+                <div class="layout horizontal end">
+                  <paper-icon-button id="back_arrow" icon="alejost-icons:arrow-back" on-tap="_showLoginPage"></paper-icon-button>
+                  <span class="flex"></span>
+                  <paper-button raised class="raised_button" on-tap="resetPassword">Reset</paper-button>
+                </div>
+              </form>
+            </iron-form>
           </section>
         </iron-pages>
       </div>
@@ -103,10 +115,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       static get is() { return 'login-view'; }
 
       login(){
-        let validEmail = this.$.email_input.validate();
-        let validPassword = this.$.password_input.validate();
-
-        if (!validEmail || !validPassword) {
+        if (!this.$.sign_in_form.validate()) {
           return;
         }
 
@@ -114,8 +123,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       resetPassword(){
-        let validEmail = this.$.reset_email_input.validate();
-        if (!validEmail) {
+        if (!this.$.reset_form.validate()) {
           return;
         }
 
