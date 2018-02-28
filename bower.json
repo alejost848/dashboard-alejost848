@@ -37,7 +37,8 @@
     "paper-date-picker": "polymer-paper-date-picker#2.0-preview",
     "paper-dialog": "PolymerElements/paper-dialog#^2.0.1",
     "paper-swatch-picker": "PolymerElements/paper-swatch-picker#^2.0.1",
-    "sherby-metadata": "SherbyElements/sherby-metadata#^1.0.1"
+    "sherby-metadata": "SherbyElements/sherby-metadata#^1.0.1",
+    "web-animations-js": "web-animations/web-animations-js#^2.3.1"
   },
   "resolutions": {
     "polymer": "^2.0.0"
