@@ -67,7 +67,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         width: 100%;
         --paper-progress-container-color: transparent;
         --paper-progress-active-color: var(--app-linear-gradient);
-        opacity: 0.5;
       }
 
       @media (max-width: 960px) {
@@ -166,6 +165,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       _computeTimeAgo(publishedDate) {
+        if (Math.abs(moment().diff(publishedDate)) < 86400000) { // 1 day
+          return 'today';
+        }
         return moment(publishedDate).fromNow();
       }
     }
